@@ -16,10 +16,15 @@ export type InterpreterStyles = {
   explanationClass: string;
 }
 
+export type InterpreterConfig = {
+  linkBuilder: (link: string) => string;
+}
+
 export class Interpreter implements StmtVisitor<ReactNode>, ExprVisitor<ReactNode> {
 
-  constructor(styles: InterpreterStyles) {
+  constructor(styles: InterpreterStyles, config: InterpreterConfig) {
     this.styles = styles;
+    this.config = config;
   }
 
   interpret(ast: Expr | Stmt): ReactNode {
@@ -46,12 +51,12 @@ export class Interpreter implements StmtVisitor<ReactNode>, ExprVisitor<ReactNod
   }
 
   visitSectionExpr(section: Section): ReactNode {
-    return (<h3 id={section.term.index} className={this.styles.sectionClass}
+    return (<h3 id={section.term.index} key={section.term.lexeme} className={this.styles.sectionClass}
     >{this.renderText(section.term.lexeme)}</h3>);
   }
 
   visitLabelExpr(expr: Label): ReactNode {
-    return (<dl id={expr.label.index}>
+    return (<dl id={expr.label.index} key={expr.label.index}>
       <dt>{expr.label.lexeme}</dt>
       <dd>{expr.term.accept(this)}</dd>
     </dl>)
@@ -129,23 +134,11 @@ export class Interpreter implements StmtVisitor<ReactNode>, ExprVisitor<ReactNod
   }
 
   private processMarkup(input: string): ReactNode {
-    const processor = new MarkupProcessor(this.transformLink, input);
+    const processor = new MarkupProcessor(this.config.linkBuilder, input);
     return processor.run();
   }
 
-  private transformLink(link: string): string {
-    return "/en/1/#" + link;
-  }
-
-  private preprocessText(input: string): string {
-    // The following loses "this" context and does not work:
-    // return [this.markupItalic, this.markupLink, this.trimBeforePunctuation].reduce((res, fn)=> fn(res), input);
-    // Note: the operations do not commute
-    return this.markupLink(this.markupItalic(this.trimBeforePunctuation(input)));
-  }
-
   // matches link format in string literal: (text)[index]
-  private readonly linkRx = /\[(?<text>[^\[\]\(\)]+)\]\((?<link>[\w\s]+)\)/g;
 
   // matches italics format in string literal: _text_
   // I am making assertions about italics formatting: 
@@ -165,15 +158,9 @@ export class Interpreter implements StmtVisitor<ReactNode>, ExprVisitor<ReactNod
     return input.replace(this.trimBeforePunctuationRx, (_match, p1)=>p1);
   }
 
-  private markupItalic(input: string): string {
-    return input.replace(this.italicsRx, (_match, p1, p2) => `<i>${p1}</i>${p2}`);
-  }
-
-  private markupLink(input: string): string {
-    return input.replace(this.linkRx, (_match, p1, p2) => `<a href="#${p2}">${p1}</a>`);
-  }
 
   // it's not a good idea to reassign this because the entire document tree will be rerendered
   private readonly styles;
+  private readonly config;
 
 }

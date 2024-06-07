@@ -1,31 +1,23 @@
 import { Scanner } from "~/interpreter/scanner";
- import Input from "~/data/spinoza-ethica-en-elwes.json";
-// import Input from "~/data/spinoza-ethica-lat-gebhardt.json";
+import Input from "~/data/spinoza-ethica-en-elwes.json";
 import { Parser } from "~/interpreter/parser";
-import { Interpreter, InterpreterStyles } from "~/interpreter/interpreter";
+import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { ReactNode } from "react";
+import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 
 
-const styles: InterpreterStyles = {
-    sourceClass: "",
-    bookClass: "",
-    sectionClass: "",
-    axiomClass: "",
-    definitionClass: "",
-    propositionClass: "",
-    demonstrationClass: "",
-    scholiumClass: "",
-  corollaryClass: "",
-  explanationClass: "",
+const transformLink = (link: string): string => {
+  return "#" + link;
 }
 
-
-import stylesheet from "~/app/app.css?url";
+const config: InterpreterConfig = {
+  linkBuilder: transformLink,
+}
 const scanner = new Scanner(Input);
 const tokens = scanner.run();
 const parser = new Parser(tokens);
 const ast = parser.parse();
-const interpreter = new Interpreter(styles);
+const interpreter = new Interpreter(defaultInterpreterStyles, config);
 const element: ReactNode = ast ? interpreter.interpret(ast) : <h2>Parse error!!!</h2>;
 
 export default function RenderContents() {
