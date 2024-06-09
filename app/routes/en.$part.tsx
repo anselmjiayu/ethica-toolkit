@@ -1,10 +1,8 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
-import { Header, links as headerLinks} from "~/components/header";
 
 export const links: LinksFunction = () => [
-  ...headerLinks(),
 ];
 
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
@@ -35,7 +33,6 @@ export default function ENPartPage() {
   const sectionNode = interpreter.interpret(section);
   return (
   <div className="wrapper">
-      <Header />
       {sectionNode}
   </div>
   );

@@ -10,7 +10,8 @@ details {
   font-size: 12px;
 }
 
-ul {
+.option-menu {
   list-style: none;
+  position: fixed;
   display: inline;
 }

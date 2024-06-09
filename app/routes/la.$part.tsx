@@ -1,6 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import {Header} from "~/components/header";
 
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { la_ast } from "~/runtime/la_gebhardt_instance";
@@ -30,7 +29,6 @@ export default function LAPartPage() {
   const sectionNode = interpreter.interpret(section);
   return (
   <div className="wrapper">
-      <Header />
       {sectionNode}
   </div>
   );
