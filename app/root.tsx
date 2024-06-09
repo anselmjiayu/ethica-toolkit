@@ -44,6 +44,8 @@ export async function action({
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+    let prefs = useLoaderData<typeof loader>();
+    let theme = prefs.theme || "light";
     return (
         <html lang="en">
             <head>
@@ -52,7 +54,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Meta />
                 <Links />
             </head>
-            <body>
+            <body className={theme}>
                 <Header />
         {children}
         <ScrollRestoration />
@@ -72,7 +74,7 @@ function Header() {
 
     return (
         <header className={"navbar " + theme} top-banner="true">
-            <h2>Ethica</h2>
+            <h2 className="title">Ethica</h2>
             <details>
                 <summary>theme</summary>
                 <ul className="option-menu">

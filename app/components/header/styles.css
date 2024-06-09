@@ -6,12 +6,29 @@
   border: 2px solid red;
 }
 
+h2.title {
+  margin-left: 35px;
+}
+
 details {
   font-size: 12px;
+  margin-right: 100px;
+  position: relative;
 }
 
 .option-menu {
   list-style: none;
-  position: fixed;
+  position: absolute;
   display: inline;
+  /* unset default padding */
+  padding-left: 0;
+}
+
+button {
+  background-color: transparent;
+  border: 2px solid rebeccapurple;
+  border-radius: 5px;
+  font: inherit;
+  margin-bottom: 5px;
+  width: 100%;
 }

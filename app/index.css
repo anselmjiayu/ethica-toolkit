@@ -19,9 +19,22 @@ html {
     --cyan: #4d7770;
 }
 
-body {
+body.light,
+body.system{
     background-color: var(--bg-light);
     color: var(--text-dark);
+}
+
+body.dark {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+}
+
+@media(prefers-color-scheme: dark) {
+body.system{
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+}
 }
 
 .wrapper {
