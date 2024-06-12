@@ -1,4 +1,4 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { LinksFunction, MetaFunction } from "@remix-run/node";
 import RenderContents from "~/components/RenderContents";
 
 export const meta: MetaFunction = () => {
@@ -7,10 +7,16 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Ethics by Benedictus de Spinoza" },
   ];
 };
+import { links as frameLinks } from "~/components/frame-full";
+import { prefs } from "~/components/header/prefs-cookie";
+
+export const links: LinksFunction = () => [
+    ...frameLinks(),
+];
 
 export default function Index() {
   return (
-    <div style={{ fontFamily: "junicode, system-ui, serif", lineHeight: "1.8" }}>
+    <div className="wrapper">
       <RenderContents />
     </div>
   );

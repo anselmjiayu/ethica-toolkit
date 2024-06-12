@@ -1,8 +1,11 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
+import { links as frameLinks } from "~/components/frame-full";
+import { prefs } from "~/components/header/prefs-cookie";
 
 export const links: LinksFunction = () => [
+    ...frameLinks(),
 ];
 
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
@@ -22,6 +25,7 @@ function transformLink(source: string): string {
 
 const config: InterpreterConfig = {
   linkBuilder: transformLink,
+    anchorPrefix: "",
 }
 
 const interpreter = new Interpreter(defaultInterpreterStyles, config);

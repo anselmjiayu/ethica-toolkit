@@ -9,16 +9,51 @@ html {
 }
 
 :root {
-    --bg-light: #e0e0e0;
+    --bg-light: #eee;
     --bg-dark: #212121;
-    --text-light: #d8d8d8;
+    --text-light: #e0e0e0;
     --text-dark: #181818;
+    --white: #ffffff;
+    --lightgrey: #e2e2e2;
+    --light-highlight: #ccc;
+    --grey: #999;
+    --dark-highlight: #454545;
+    --darkgrey: #272727;
     --blue: #6a9fb5;
     --lightblue: #82b8c8;
     --darkblue: #456877;
     --cyan: #4d7770;
+    --red: #b24756;
+    --purple: #803396;
+
+    /* fonts */
+    --decorative: "Junicode", serif;
+    --serif: "Junicode", serif;
+    --sans: "Open Sans", sans-serif;
+
+    /* font sizes */
+    --base-size: 1.2rem;
+    --scale: 1.25;
+    --xl: calc(var(--h1) * var(--scale) * var(--scale)); 
+    --lg: calc(var(--h1) * var(--scale)); 
+    --h1: calc(var(--h2) * var(--scale)); 
+    --h2: calc(var(--h3) * var(--scale)); 
+    --h3: calc(var(--h4) * var(--scale)); 
+    --h4: calc(var(--h5) * var(--scale)); 
+    --h5: calc(var(--h6) * var(--scale)); 
+    --h6: var(--base-size); 
+    --small: calc(var(--base-size) / var(--scale)); 
+
+    /* other variables */
+    --radius: 3px;
+    --header-height: 70px;
 }
 
+body {
+    padding: 0;
+    margin: 0;
+    font-family: var(--serif);
+}
 body.light,
 body.system{
     background-color: var(--bg-light);
@@ -37,18 +72,10 @@ body.system{
 }
 }
 
-.wrapper {
-    margin-top: 3rem;
-    padding: 2rem;
-    margin-left: 1rem;
-    max-width: 800px;
-    font-size: 16px;
-}
 
-a {
-    color: var(--lightblue);
-}
+/* Reference: https://css-tricks.com/hash-tag-links-padding/ */
 
-p {
-    margin-bottom: 3rem;
+[id] {
+    scroll-margin-top: var(--header-height);
+    scroll-snap-margin-top: var(--header-height); /* iOS 11 and older */
 }

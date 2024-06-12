@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Expr, Axiom, Corollary, Definition, Demonstration, Explanation, ExprVisitor, Proposition, Scholium, Section, Label, Preface, Postulate, Lemma } from "app/types/Expr";
 import { Book, Source, Stmt, StmtVisitor } from "app/types/Stmt";
 import { MarkupProcessor } from "~/markup-processor/markup";
+import { Link } from "@remix-run/react";
 
 export type InterpreterStyles = {
   sourceClass: string;
@@ -18,6 +19,7 @@ export type InterpreterStyles = {
 
 export type InterpreterConfig = {
   linkBuilder: (link: string) => string;
+    anchorPrefix: string;
 }
 
 export class Interpreter implements StmtVisitor<ReactNode>, ExprVisitor<ReactNode> {
@@ -44,20 +46,23 @@ export class Interpreter implements StmtVisitor<ReactNode>, ExprVisitor<ReactNod
   // Book titles should be h1
   visitBookStmt(book: Book): ReactNode {
     return (<>
-      <h1 id={book.title.index} className={this.styles.bookClass} 
+      <h1 id={ this.config.anchorPrefix + book.title.index} className={this.styles.bookClass} 
         >{this.renderText(book.title.lexeme)}</h1>
       {book.contents.map(e => e.accept(this))}
       </>);
   }
 
   visitSectionExpr(section: Section): ReactNode {
-    return (<h3 id={section.term.index} key={section.term.lexeme} className={this.styles.sectionClass}
+    return (<h3 id={this.config.anchorPrefix + section.term.index} key={section.term.lexeme} className={this.styles.sectionClass}
     >{this.renderText(section.term.lexeme)}</h3>);
   }
 
   visitLabelExpr(expr: Label): ReactNode {
-    return (<dl id={expr.label.index} key={expr.label.index}>
-      <dt>{expr.label.lexeme}</dt>
+    return (<dl id={this.config.anchorPrefix + expr.label.index} key={expr.label.index}>
+      <dt>
+            <Link className="anchor-link" to={"#" + this.config.anchorPrefix + expr.label.index}>#</Link>
+          {" "}
+          {expr.label.lexeme}</dt>
       <dd>{expr.term.accept(this)}</dd>
     </dl>)
   }
@@ -138,18 +143,6 @@ export class Interpreter implements StmtVisitor<ReactNode>, ExprVisitor<ReactNod
     return processor.run();
   }
 
-  // matches link format in string literal: (text)[index]
-
-  // matches italics format in string literal: _text_
-  // I am making assertions about italics formatting: 
-  // (1) The opening underscore is followed by an alphanumeric character 
-  // or '(' or '['
-  // (2) The closing underscore is not followed by an alphanumeric character
-  // or end of string.
-  // From this section in the title:
-  // ETHICA Ordine Geometrico demonstrata _ET_ _In quinque Partes distincta_ _in quibus agitur,_
-  // the expression should not match the whitespace between the italic parts.
-  private readonly italicsRx = /_([\w\(\[][^_]*)_([^\w\(]|$)/g;
 
   // this is a quirk in the input text.
   private readonly trimBeforePunctuationRx = / ([,;:])/g;

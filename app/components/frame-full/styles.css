@@ -1,4 +1,79 @@
 [frame-full] {
-    width: 100%;
-    max-width: 1200px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.wrapper {
+  padding: 2rem;
+  margin: auto;
+  margin-top: 100px;
+  max-width: 800px;
+  font-size: var(--h5);
+
+  --item-margin: 10px;
+}
+
+.wrapper h1,
+.wrapper h2 {
+  margin-top: var(--xl);
+  margin-bottom: var(--xl);
+}
+
+h3,
+h4 {
+  margin-top: var(--lg);
+  margin-bottom: var(--lg);
+}
+
+dl {
+  display: block;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Unset default paragraph and dd display; format page with <dl> and retain semantic meaning from <p> */
+
+dd {
+  margin-left: var(--item-margin);
+  display: inline;
+}
+
+dd>p {
+  display: inline;
+}
+
+dt {
+  display: inline;
+}
+
+/* Hide "#" link until label is hovered over */
+
+.anchor-link {
+  visibility: hidden;
+  font-family: var(--sans);
+}
+
+dt:hover>.anchor-link {
+  visibility: visible;
+}
+
+/* Theme colors */
+
+.light a,
+.system a {
+  color: var(--red);
+}
+
+.dark a {
+  color: var(--lightblue);
+}
+
+p {
+  margin-bottom: 1.5rem;
+}
+
+@media(prefer-color-scheme: dark) {
+  .system a {
+    color: var(--lightblue);
+  }
 }

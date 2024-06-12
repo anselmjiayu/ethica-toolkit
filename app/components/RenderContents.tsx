@@ -7,11 +7,12 @@ import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 
 
 const transformLink = (link: string): string => {
-  return "#" + link;
+    return "#" + link;
 }
 
 const config: InterpreterConfig = {
-  linkBuilder: transformLink,
+    linkBuilder: transformLink,
+    anchorPrefix: "",
 }
 const scanner = new Scanner(Input);
 const tokens = scanner.run();

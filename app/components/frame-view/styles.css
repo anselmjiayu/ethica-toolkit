@@ -1,0 +1,98 @@
+.view-wrapper {
+  display: grid;
+  grid-template-areas:
+    "placeholder placeholder placeholder"
+    "view-top view-top view-top"
+    ". separator ."
+    "view-bottom view-bottom view-bottom";
+  --separator-length: 450px;
+  grid-template-columns: auto var(--separator-length) auto;
+
+  --placeholder-height: 80px;
+  --separator-width: 1px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.wrapper.view {
+
+  /* Overwrite default wrapper styles */
+  max-width: 600px;
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
+
+  /* two text frames flow separately */
+  max-height: calc((100vh - var(--placeholder-height) - var(--separator-width)) / 2);
+  overflow-y: scroll;
+}
+
+
+.view [id] {
+  scroll-margin-top: 5px;
+  scroll-snap-margin-top: 5px;
+  /* iOS 11 and older */
+}
+
+.placeholder {
+  grid-area: placeholder;
+  height: var(--placeholder-height);
+}
+
+.separator {
+  grid-area: separator;
+  height: var(--separator-width);
+}
+
+.light .separator,
+.system .separator {
+  background-color: var(--light-highlight);
+}
+
+.dark .separator {
+  background-color: var(--dark-highlight);
+}
+
+@media(prefers-color-scheme: dark) {
+  .system .separator {
+    background-color: var(--dark-highlight);
+  }
+}
+
+.view1 {
+  grid-area: view-top;
+}
+
+.view2 {
+  grid-area: view-bottom;
+}
+
+@media(min-width: 900px) {
+
+  .view-wrapper {
+    grid-template-areas:
+      "placeholder placeholder placeholder"
+      "view-left . view-right"
+      "view-left separator view-right"
+      "view-left . view-right";
+    grid-template-columns: unset;
+    grid-template-rows: var(--placeholder-height) auto var(--separator-length) auto;
+  }
+
+  .view1 {
+    grid-area: view-left;
+  }
+
+  .view2 {
+    grid-area: view-right;
+  }
+
+  .separator {
+    height: unset;
+    width: var(--separator-width);
+  }
+
+  .wrapper.view {
+    max-height: calc(100vh - var(--placeholder-height));
+  }
+}

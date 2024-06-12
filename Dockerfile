@@ -23,9 +23,10 @@ RUN mkdir /app
 WORKDIR /app
 COPY --from=deps /app/node_modules /app/node_modules
 
-ADD . .
+COPY . .
 RUN npm run build
 
+# production
 FROM base
 
 ENV NODE_ENV production
@@ -38,5 +39,4 @@ COPY --from=build /app/build /app/build
 COPY --from=build /app/public /app/public
 ADD . .
 EXPOSE 3000
-CMD ["npm", "run", "start"]
-
+CMD ["npm", "start"]

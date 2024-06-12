@@ -1,19 +1,45 @@
 .navbar {
   display: flex;
+  position: fixed;
+  width: 100%;
+  top: 0;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  border: 2px solid red;
+  font-family: var(--sans);
+}
+
+.navbar.light, .navbar.system {
+    background-color: var(--lightgrey);
+}
+
+.navbar.dark {
+    background-color: var(--darkgrey);
 }
 
 h2.title {
   margin-left: 35px;
+  font-family: var(--serif);
 }
 
 details {
-  font-size: 12px;
-  margin-right: 100px;
+  font-size: var(--small);
   position: relative;
+  padding-right: 40px;
+}
+
+@media(min-width: 700px) {
+    details
+    {
+        margin-right: 80px;
+    }
+}
+
+@media(min-width: 1200px) {
+    details
+    {
+        margin-right: 200px;
+    }
 }
 
 .option-menu {
@@ -25,10 +51,62 @@ details {
 }
 
 button {
-  background-color: transparent;
-  border: 2px solid rebeccapurple;
-  border-radius: 5px;
+    /* Unset default button styling */
+  background-color: inherit;
+  color: inherit;
+  border: none;
   font: inherit;
-  margin-bottom: 5px;
+  text-align: left;
+  padding: 0;
+  height: 100%;
   width: 100%;
 }
+
+
+ul {
+    width: max-content;
+    padding-right: 7px;
+    border-radius: var(--radius);
+}
+
+.light ul, .system ul {
+    background-color: var(--lightgrey);
+}
+
+.dark ul {
+    background-color: var(--darkgrey);
+}
+
+.light li:hover, .system li:hover {
+    background-color: var(--light-highlight);
+}
+
+.dark li:hover {
+    background-color: var(--dark-highlight);
+}
+
+li {
+    width: 100%;
+    padding: 5px;
+}
+
+li:first-of-type {
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+li:last-of-type {
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+
+@media(prefers-color-scheme: dark) {
+    .navbar.system {
+        background-color: var(--darkgrey);
+    }
+    .system ul {
+        background-color: var(--darkgrey);
+    }
+    .system li:hover {
+    background-color: var(--dark-highlight);
+}
+}
+

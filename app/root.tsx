@@ -1,12 +1,12 @@
 import { ActionFunctionArgs, LinksFunction, LoaderFunctionArgs, json } from "@remix-run/node";
 import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useFetcher,
-  useLoaderData,
+    Links,
+    Meta,
+    Outlet,
+    Scripts,
+    ScrollRestoration,
+    useFetcher,
+    useLoaderData,
 } from "@remix-run/react";
 
 import styles from "app/index.css?url";
@@ -26,6 +26,8 @@ export async function loader({
     return json({ theme: cookie.theme });
 }
 
+// save preferences in cookie to for persistent state
+
 export async function action({
     request,
 }: ActionFunctionArgs) {
@@ -43,9 +45,21 @@ export async function action({
     });
 }
 
+// The header is included in this element
 export function Layout({ children }: { children: React.ReactNode }) {
-    let prefs = useLoaderData<typeof loader>();
-    let theme = prefs.theme || "light";
+    const fetcher = useFetcher();
+    let { theme } = useLoaderData<typeof loader>();
+
+    // use optimistic ui to update the change immediately
+    if (fetcher.formData?.has("theme")) {
+        theme = fetcher.formData.get("theme");
+    }
+    // default
+    if (!theme) theme = "system";
+
+    // optimistic ui synchronization requires form element to be included here,
+    // to factor out the header both the fetcher and the theme need to be passed in
+    // having a large element seems to be the simpler alternative
     return (
         <html lang="en">
             <head>
@@ -55,66 +69,56 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Links />
             </head>
             <body className={theme}>
-                <Header />
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
-  );
+                <header className={"navbar " + theme} top-banner="true">
+                    <h2 className="title">Ethica</h2>
+                    <details className={theme}>
+                        <summary>theme</summary>
+                        <ul className="option-menu">
+                            <li>
+                                <fetcher.Form method="post">
+                                    <button name="theme" value="light">
+                                        Light
+                                    </button>
+                                </fetcher.Form>
+                            </li>
+                            <li>
+                                <fetcher.Form method="post">
+                                    <button name="theme" value="dark">
+                                        Dark
+                                    </button>
+                                </fetcher.Form>
+                            </li>
+                            <li>
+                                <fetcher.Form method="post">
+                                    <button name="theme" value="system">
+                                        System
+                                    </button>
+                                </fetcher.Form>
+                            </li>
+                        </ul>
+                    </details>
+                    <details className={theme}>
+                        <summary>
+                            options
+                        </summary>
+                        <ul className="option-menu">
+                            <li>Edition</li>
+                            <li>Key bindings</li>
+                            <li>About</li>
+                        </ul>
+                    </details>
+                </header>
+
+                {children}
+                <ScrollRestoration />
+                <Scripts />
+            </body>
+        </html>
+    );
 }
 
 
-// the header sets application-wide state and belongs in the root
-function Header() {
-    const fetcher = useFetcher();
-    let prefs = useLoaderData<typeof loader>();
-    // default theme
-    let theme = prefs.theme || "light";
-
-    return (
-        <header className={"navbar " + theme} top-banner="true">
-            <h2 className="title">Ethica</h2>
-            <details>
-                <summary>theme</summary>
-                <ul className="option-menu">
-                    <li>
-                        <fetcher.Form method="post">
-                            <button name="theme" value="light">
-                                Light
-                            </button>
-                        </fetcher.Form>
-                    </li>
-                    <li>
-                        <fetcher.Form method="post">
-                            <button name="theme" value="dark">
-                                Dark
-                            </button>
-                        </fetcher.Form>
-                    </li>
-                    <li>
-                        <fetcher.Form method="post">
-                            <button name="theme" value="system">
-                                System
-                            </button>
-                        </fetcher.Form>
-                    </li>
-                </ul>
-            </details>
-            <details>
-                <summary>
-                    options
-                </summary>
-                <ul className="option-menu">
-                    <li>Edition</li>
-                    <li>Key bindings</li>
-                    <li>About</li>
-                </ul>
-            </details>
-        </header>
-    )
-}
 
 export default function App() {
-  return <Outlet />;
+    return <Outlet />;
 }
