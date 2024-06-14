@@ -1,4 +1,5 @@
 import type { LinksFunction, MetaFunction } from "@remix-run/node";
+import HomePage from "~/components/HomePage";
 import RenderContents from "~/components/RenderContents";
 
 export const meta: MetaFunction = () => {
@@ -17,7 +18,7 @@ export const links: LinksFunction = () => [
 export default function Index() {
   return (
     <div className="wrapper">
-      <RenderContents />
+      <HomePage />
     </div>
   );
 }

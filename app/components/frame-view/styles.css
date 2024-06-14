@@ -67,6 +67,7 @@
   grid-area: view-bottom;
 }
 
+/* "Vertical" layout */
 @media(min-width: 900px) {
 
   .view-wrapper {

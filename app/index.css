@@ -9,6 +9,7 @@ html {
 }
 
 :root {
+  /* color layout */
     --bg-light: #eee;
     --bg-dark: #212121;
     --text-light: #e0e0e0;
