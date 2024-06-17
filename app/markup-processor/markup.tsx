@@ -5,6 +5,21 @@ import { ReactNode } from "react";
  * MarkupProcessor: lightweight module for safe and convenient markup conversion into React nodes
  */
 
+enum token {
+  Text,
+  Link,
+  Idiomatic,
+  Image,
+  Comment,
+}
+
+const INIT_INDEX = 1e5; // large number to represent no successful regex match
+
+type NextMatch = {
+  tokenType: token;
+  captureGroups:  ReturnType<typeof String.prototype.match>;
+}
+
 export class MarkupProcessor {
   private readonly linkTransformer: (s: string) => string;
   private readonly source: string;
@@ -33,37 +48,95 @@ export class MarkupProcessor {
   private process(section: string): ReactNode {
     // base condition
     if (section === "") return "";
-
-    // Match for idiomatic or link markup, find which one begins earlier, then recurse
-    const matchIdiomatic = section.match(MarkupProcessor.idiomaticRx);
-    const matchLink = section.match(MarkupProcessor.linkRx);
-    if (matchIdiomatic === null && matchLink === null) return section;
-    else if (matchLink === null || (matchIdiomatic !== null && matchLink.index! > matchIdiomatic.index!)) {
-      // at this branch matchIdiomatic must exist and have priority
-      // process idiomatic
-
-      // since matchIdiomatic returns a match, the index is guaranteed to exist
-      // the test code asserts correctness of the expression matching
-      const beforeIdx = matchIdiomatic!.index!;
-      const afterIdx = beforeIdx + matchIdiomatic![0].length;
-      const idiomaticCapture = matchIdiomatic![1];
-      return (<>
-        {section.slice(0, beforeIdx)}
-        {this.visitIdiomatic(idiomaticCapture)}
-        {this.process(section.slice(afterIdx, section.length))}
-      </>)
-    } else {
-      // matchIdiomatic === null || matchLink.index < matchIdiomatic.index
-      const beforeIdx = matchLink!.index!;
-      const afterIdx = beforeIdx + matchLink![0].length;
-      const textCapture = matchLink![1];
-      const addressCapture = matchLink![2];
-      return (<>
-        {section.slice(0, beforeIdx)}
-        {this.visitLink(textCapture, addressCapture)}
-        {this.process(section.slice(afterIdx, section.length))}
-      </>)
+    const {tokenType, captureGroups} = this.match(section);
+    let current;
+    switch(tokenType) {
+      case token.Text: return section;
+      case token.Idiomatic:
+        current = this.visitIdiomatic(captureGroups![1]);
+        break;
+      case token.Link:
+        current = this.visitLink(captureGroups![1], captureGroups![2]);
+        break;
+      case token.Image:
+        current = this.visitImage(captureGroups![1], captureGroups![2]);
+        break;
+      case token.Comment:
+        current = this.visitComment(captureGroups![1]);
+        break;
     }
+
+    const beforeIdx = captureGroups?.index!;
+    const afterIdx = beforeIdx + captureGroups![0].length;
+    return (<>
+      {section.slice(0, beforeIdx)}
+      {current}
+      {this.process(section.slice(afterIdx, section.length))}
+    </>)
+  }
+
+  private match(section: string): NextMatch {
+    let tokenType=token.Text, captureGroups=null, startIndex=INIT_INDEX, match=null;
+    // idiomatic
+    match = section.match(MarkupProcessor.idiomaticRx);
+    if(match!==null && typeof match.index === "number" && (match.index < startIndex) ) {
+      tokenType = token.Idiomatic;
+      startIndex = match.index;
+      captureGroups = match;
+    }
+    // image
+    match = section.match(MarkupProcessor.imageRx);
+    if(match!==null && typeof match.index === "number" && (match.index < startIndex) ) {
+      tokenType = token.Image;
+      startIndex = match.index;
+      captureGroups = match;
+    }
+    // link
+    match = section.match(MarkupProcessor.linkRx);
+    if(match!==null && typeof match.index === "number" && (match.index < startIndex) ) {
+      tokenType = token.Link;
+      startIndex = match.index;
+      captureGroups = match;
+    }
+
+    // comment
+    match = section.match(MarkupProcessor.commentStartRx);
+    if(match!==null && typeof match.index === "number" && (match.index < startIndex) ) {
+      // find next closing bracket without opening bracket
+      let opening = 0, done=false, end=INIT_INDEX;
+      // skip first two chars: \^\[
+      for (let i = match.index + 2; i < section.length; i++) {
+        if(done) break;
+        switch (section[i]) {
+          case '[':
+            opening++;
+            break;
+          case ']':
+            if (opening === 0) {
+              done = true;
+              end = i;
+            } else {
+              opening--;
+            }
+            break;
+          default:
+            ; // do nothing
+            break;
+        }
+      }
+      // duck type a match object using original match return value
+      // reference:
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
+      match[0] = section.slice(match.index, end + 1);
+      match[1] = section.slice(match.index + 2, end); // slice until the closing bracket (end-1+1)
+      tokenType = token.Comment;
+      startIndex = match.index;
+      captureGroups = match;
+    }
+
+    // done
+    return {tokenType, captureGroups};
+
   }
 
   private visitIdiomatic(section: string): ReactNode {
@@ -77,9 +150,29 @@ export class MarkupProcessor {
     )
   }
 
+  private visitImage(text: string, address: string): ReactNode {
+    return (
+      <>
+{/* <img src={address} alt={text} /> */}
+        <label>{text}</label>
+</>
+    )
+  }
+
+  private visitComment(section: string): ReactNode {
+    return (
+    <cite>
+    {this.process(section)}
+    </cite>
+    )
+  }
   static linkRx = /\[([^\]]+)\]\(([\w\s]+)\)/;
 
   // do not support nesting
   static idiomaticRx = /_([^_]*)_/;
+
+  static imageRx = /!\[([^\[\]]+)\]\(([^\)]+)\)/;
+
+  static commentStartRx = /\^\[/;
 
 }

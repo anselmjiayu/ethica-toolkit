@@ -48,7 +48,7 @@ export default function HomePage() {
             <Link to="/la/5">Part 5 </Link>
           </li>
         </ol>
-        <h3>Latin/English split scren reader</h3>
+        <h3>Latin/English split screen reader</h3>
         <ol>
           <li>
           <Link to="http://localhost:5173/view/?view1=la&view2=en&part1=1&part2=1">Part 1 </Link>
