@@ -45,8 +45,17 @@ export default function ENPartPage() {
 }
 
 function Navigate({section}: {section: number}) {
-  return (<nav>
-    <Link to={"/en/"+(section -1)}>{"<<"}</Link>
-    <Link to={"/en/"+(section +1)}>{">>"}</Link>
+  return (<nav className="part-nav">
+    <div className="nav-link">
+    {section === 1 ? <span>Start</span> : <Link to={"/en/"+(section -1)}>{"<<"}</Link>}
+    </div>
+
+    <div className="nav-link">
+    <Link to={"/"}>Home</Link>
+    </div>
+
+    <div className="nav-link">
+    {section === 5 ? <span>End</span> : <Link to={"/en/"+(section +1)}>{">>"}</Link>}
+    </div>
   </nav>)
 }

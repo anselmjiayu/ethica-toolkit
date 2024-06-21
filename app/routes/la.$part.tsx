@@ -1,5 +1,5 @@
 import { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { links as frameLinks } from "~/components/frame-full";
 import { prefs } from "~/components/header/prefs-cookie";
 
@@ -36,7 +36,25 @@ export default function LAPartPage() {
   const sectionNode = interpreter.interpret(section);
   return (
   <div className="wrapper">
+      <Navigate section={partIndex}/>
       {sectionNode}
+      <Navigate section={partIndex}/>
   </div>
   );
+}
+
+function Navigate({section}: {section: number}) {
+  return (<nav className="part-nav">
+    <div className="nav-link">
+    {section === 1 ? <span>Start</span> : <Link to={"/la/"+(section -1)}>{"<<"}</Link>}
+    </div>
+
+    <div className="nav-link">
+    <Link to={"/"}>Home</Link>
+    </div>
+
+    <div className="nav-link">
+    {section === 5 ? <span>End</span> : <Link to={"/la/"+(section +1)}>{">>"}</Link>}
+    </div>
+  </nav>)
 }

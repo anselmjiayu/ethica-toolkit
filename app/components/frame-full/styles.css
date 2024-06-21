@@ -4,25 +4,36 @@
 }
 
 .wrapper {
-  padding: 2rem;
+  padding: 2rem 4rem 2rem 4rem;
   margin: auto;
   margin-top: 100px;
   max-width: 800px;
-  font-size: var(--h5);
+  font-size: var(--h6);
+
+  /* Set default line height */
+  line-height: 1.5;
+  
+  /* This feature is only fully supported on firefox, but when available provides better visual */
+  /* When text-justify is not available, this has no effect */
+  text-align: justify;
+  text-justify: auto;
 
   --item-margin: 10px;
 }
 
 .wrapper h1,
 .wrapper h2 {
-  margin-top: var(--xl);
-  margin-bottom: var(--xl);
+  margin-top: var(--h1);
+  margin-bottom: var(--h1);
+  padding-left: var(--h6);
+  text-justify: none;
+  text-align: center;
 }
 
 h3,
 h4 {
-  margin-top: var(--lg);
-  margin-bottom: var(--lg);
+  margin-top: var(--h2);
+  margin-bottom: var(--h2);
 }
 
 dl {
@@ -72,8 +83,35 @@ p {
   margin-bottom: 1.5rem;
 }
 
-@media(prefer-color-scheme: dark) {
+@media(prefers-color-scheme: dark) {
   .system a {
     color: var(--lightblue);
+  }
+}
+
+/* Navigation links */
+
+.part-nav {
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+  /* background-color: var(--lightblue); */
+}
+
+.nav-link {
+  padding: 10px;
+  text-align: center;
+}
+
+.nav-link > span {
+  color: var(--grey);
+}
+
+@media(min-width: 700px) {
+  .part-nav {
+    grid-template-rows: unset;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
