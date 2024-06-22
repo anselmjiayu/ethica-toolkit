@@ -1,10 +1,9 @@
 import { LinksFunction, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
-import { en_ast } from "~/runtime/en_elwes_instance";
-import { la_ast } from "~/runtime/la_gebhardt_instance";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 import { links as frameLinks } from "~/components/frame-view";
+import { LazySyncContext, SourceEditions } from "~/actors/lazySyncMachine";
 
 export const links: LinksFunction = () => [
     ...frameLinks(),
@@ -32,18 +31,31 @@ const configCreator = (prefix: string, paramsProducer: (part: number) => string)
     anchorPrefix: prefix,
 })
 
-function getAstBranch(view: string, part: string) {
-    // provide default params
-    const a = view === "en" ? en_ast : la_ast;
-    const idx = part.match(part_rx) ? Number.parseInt(part) : 1;
-
-    // assert that ast branch exists
-    return a?.parts[idx]!;
-}
 
 const part_rx = /^[1-5]$/;
 
 export default function ViewSplit() {
+
+  const syncMachineRef = LazySyncContext.useActorRef();
+
+  function getAstBranch(view: string, part: string) {
+    // provide default params
+    const a = view === "en" ? LazySyncContext.useSelector(state => state.context.en_source) 
+      : LazySyncContext.useSelector(state => state.context.la_source);
+    if (a === undefined) {
+      switch(view) {
+        case "en":
+          syncMachineRef.send({type: 'FETCH', edition: SourceEditions.EN_ELWES});
+          break;
+        default:
+          syncMachineRef.send({type: 'FETCH', edition: SourceEditions.LA_GEBHARDT});
+      }
+    }
+    const idx = part.match(part_rx) ? Number.parseInt(part) : 1;
+
+    return a?.parts[idx] || undefined;
+  }
+
     const { view1, view2, part1, part2 } = useLoaderData<typeof loader>();
     const ast1 = getAstBranch(view1, part1);
     const ast2 = getAstBranch(view2, part2);
@@ -61,13 +73,16 @@ export default function ViewSplit() {
 
   const interpreter1 = new Interpreter(defaultInterpreterStyles, configCreator(view1, interpreter1ParamsProducer));
   const interpreter2 = new Interpreter(defaultInterpreterStyles, configCreator(view2, interpreter2ParamsProducer));
+  const loadingNode = (<h2>Loading...</h2>);
+  const sectionNode1 = ast1 !== undefined ? interpreter1.interpret(ast1) : loadingNode;
+  const sectionNode2 = ast2 !== undefined ? interpreter2.interpret(ast2) : loadingNode;
 
     return (
         <div className="view-wrapper">
             <div className="placeholder"/>
-            <div className="wrapper view view1">{interpreter1.interpret(ast1)}</div>
+            <div className="wrapper view view1">{sectionNode1}</div>
             <div className="separator"/>
-            <div className="wrapper view view2">{interpreter2.interpret(ast2)}</div>
+            <div className="wrapper view view2">{sectionNode2}</div>
         </div>
     )
 }

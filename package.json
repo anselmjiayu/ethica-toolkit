@@ -16,9 +16,11 @@
     "@remix-run/node": "^2.9.2",
     "@remix-run/react": "^2.9.2",
     "@remix-run/serve": "^2.9.2",
+    "@xstate/react": "^4.1.1",
     "isbot": "^4.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "xstate": "^5.13.2"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.9.2",

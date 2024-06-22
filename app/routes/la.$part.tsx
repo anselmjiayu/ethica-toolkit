@@ -1,5 +1,6 @@
 import { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
+import { LazySyncContext, SourceEditions } from "~/actors/lazySyncMachine";
 import { links as frameLinks } from "~/components/frame-full";
 import { prefs } from "~/components/header/prefs-cookie";
 
@@ -8,7 +9,6 @@ export const links: LinksFunction = () => [
 ];
 
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
-import { la_ast } from "~/runtime/la_gebhardt_instance";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 
 export function loader({ params }: LoaderFunctionArgs) {
@@ -30,9 +30,27 @@ const config: InterpreterConfig = {
 const interpreter = new Interpreter(defaultInterpreterStyles, config);
 export default function LAPartPage() {
   const partIndex = useLoaderData<typeof loader>();
+
+  // this is the global source data state machine
+  const syncMachineRef = LazySyncContext.useActorRef();
   
-  const section = la_ast?.parts?.[partIndex];
-  if(!section) return (<h2>Parse failed!!!</h2>);
+  // select parsed AST
+  const ast = LazySyncContext.useSelector(state => state.context.la_source);
+
+  if (ast === undefined) {
+    // data has not been parsed, attempt to load and parse source
+    syncMachineRef.send({ type: "FETCH", edition: SourceEditions.LA_GEBHARDT});
+  }
+
+  // get current part/branch
+  const section = ast?.parts?.[partIndex];
+
+  if (!section) return (
+    // there is no data, nothing left to do
+    <div className="wrapper">
+    <h2>Loading...</h2>
+    </div>);
+
   const sectionNode = interpreter.interpret(section);
   return (
   <div className="wrapper">

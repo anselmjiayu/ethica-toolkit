@@ -213,7 +213,7 @@ type Subexpression = {
     text: string;
 }
 type Unmatched = Object;
-type InputObject = Source | Title | Book | Section | Expression | Subexpression | Unmatched;
+export type InputObject = Source | Title | Book | Section | Expression | Subexpression | Unmatched;
 
 function isSource(x: any): x is Source {
     return x instanceof Array;

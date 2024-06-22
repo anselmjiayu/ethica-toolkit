@@ -5,6 +5,8 @@ import { Token, TokenType } from "./token";
 class ParseError extends Error {
 }
 
+export type ParseResult = Source | undefined;
+
 export class Parser {
   private readonly tokens: Token[];
   private current: number = 0;
@@ -12,7 +14,7 @@ export class Parser {
   constructor(tokens: Token[]) {
     this.tokens = tokens;
   }
-  parse() {
+  parse(): ParseResult {
     let ast;
     try {
       ast = this.source();

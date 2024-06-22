@@ -2,17 +2,17 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 import { links as frameLinks } from "~/components/frame-full";
+import { LazySyncContext, SourceEditions } from "~/actors/lazySyncMachine";
 import { prefs } from "~/components/header/prefs-cookie";
 
 export const links: LinksFunction = () => [
-    ...frameLinks(),
+  ...frameLinks(),
 ];
 
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
-import { en_ast } from "~/runtime/en_elwes_instance";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 
-export function loader({params}: LoaderFunctionArgs) {
+export function loader({ params }: LoaderFunctionArgs) {
   // If index does not fall into 1-5, default to 1
   return params.part?.match(/^[1-5]$/) ? Number.parseInt(params.part) : 1;
 }
@@ -25,37 +25,57 @@ function transformLink(source: string): string {
 
 const config: InterpreterConfig = {
   linkBuilder: transformLink,
-    anchorPrefix: "",
+  anchorPrefix: "",
 }
 
 const interpreter = new Interpreter(defaultInterpreterStyles, config);
+
+
 export default function ENPartPage() {
   const partIndex = useLoaderData<typeof loader>();
-  
-  const section = en_ast?.parts?.[partIndex];
-  if(!section) return (<h2>Parse failed!!!</h2>);
+
+  // this is the global source data state machine
+  const syncMachineRef = LazySyncContext.useActorRef();
+
+  // select parsed AST
+  const ast = LazySyncContext.useSelector(state => state.context.en_source);
+
+  if (ast === undefined) {
+    // data has not been parsed, attempt to load and parse source
+    syncMachineRef.send({ type: "FETCH", edition: SourceEditions.EN_ELWES});
+  }
+
+  // get current part/branch
+  const section = ast?.parts?.[partIndex];
+
+  if (!section) return (
+    // there is no data, nothing left to do
+    <div className="wrapper">
+    <h2>Loading...</h2>
+    </div>);
+
   const sectionNode = interpreter.interpret(section);
   return (
-  <div className="wrapper">
-      <Navigate section={partIndex}/>
+    <div className="wrapper">
+      <Navigate section={partIndex} />
       {sectionNode}
-      <Navigate section={partIndex}/>
-  </div>
+      <Navigate section={partIndex} />
+    </div>
   );
 }
 
-function Navigate({section}: {section: number}) {
+function Navigate({ section }: { section: number }) {
   return (<nav className="part-nav">
     <div className="nav-link">
-    {section === 1 ? <span>Start</span> : <Link to={"/en/"+(section -1)}>{"<<"}</Link>}
+      {section === 1 ? <span>Start</span> : <Link to={"/en/" + (section - 1)}>{"<<"}</Link>}
     </div>
 
     <div className="nav-link">
-    <Link to={"/"}>Home</Link>
+      <Link to={"/"}>Home</Link>
     </div>
 
     <div className="nav-link">
-    {section === 5 ? <span>End</span> : <Link to={"/en/"+(section +1)}>{">>"}</Link>}
+      {section === 5 ? <span>End</span> : <Link to={"/en/" + (section + 1)}>{">>"}</Link>}
     </div>
   </nav>)
 }
