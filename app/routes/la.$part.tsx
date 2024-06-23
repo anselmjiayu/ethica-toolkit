@@ -36,7 +36,7 @@ export default function LAPartPage() {
   const syncMachineRef = LazySyncContext.useActorRef();
   
   // select parsed AST
-  let ast = LazySyncContext.useSelector(state => state.context.la_source);
+  let ast = LazySyncContext.useSelector(state => state.context.la_source?.ast);
 
   if (ast === undefined) {
     // data has not been parsed, attempt to load and parse source

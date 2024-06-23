@@ -8,31 +8,33 @@ type InstanceContext = {
   source: InputObject,
   scanner: Scanner,
   parser: Parser | undefined,
-  ast: ParseResult | undefined,
+  parseResult: ParseResult | undefined,
 }
 
 export const instanceMachine = setup({
   types: {
     context: {} as InstanceContext,
     input: {} as { source: InputObject },
-    output: {} as { ast: ParseResult }
+    output: {} as { parseResult: ParseResult }
   },
   guards: {
     parserInitialized: ({ context }) => {
       return context.parser !== undefined;
     },
     parseCompleted: ({ context }) => {
-      return context.ast !== undefined;
+      return context.parseResult !== undefined;
     }
   },
   actions: {
     setParser: assign(({ context }) =>{
       const tokens = context.scanner.run();
-      return { parser: new Parser(tokens) }
+      
+      // turn on indexing flag in the parser
+      return { parser: new Parser(tokens, true) }
     }),
     setAst: assign(({ context }) =>{
-      const ast = context.parser?.parse();
-      return { ast }
+      const parseResult = context.parser?.parse();
+      return { parseResult }
     }),
   },
 }).createMachine({
@@ -40,7 +42,7 @@ export const instanceMachine = setup({
     source: input.source,
     scanner: new Scanner(input.source),
     parser: undefined,
-    ast: undefined,
+    parseResult: undefined,
   }),
   initial: 'lexing',
   states: {
@@ -62,9 +64,11 @@ export const instanceMachine = setup({
       type: 'final'
     }
   },
-  output: ({context}) => ({
-    ast: context.ast,
-  })
+  output: ({context}) => {
+    if (context.parseResult === undefined) throw new Error("this should never happen");
+    return {
+    parseResult: context.parseResult
+  }}
 })
 
 export default createActorContext(instanceMachine);

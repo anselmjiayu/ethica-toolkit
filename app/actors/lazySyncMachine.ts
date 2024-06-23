@@ -75,9 +75,9 @@ export const lazySyncMachine = setup({
           actions: assign(({event, context}) => {
             switch(context.next_source_type) {
               case SourceEditions.EN_ELWES:
-                return {en_source: event.output.ast};
+                return {en_source: event.output.parseResult};
               case SourceEditions.LA_GEBHARDT:
-                return {la_source: event.output.ast};
+                return {la_source: event.output.parseResult};
               case SourceEditions.NULL:
                 return {};
             }

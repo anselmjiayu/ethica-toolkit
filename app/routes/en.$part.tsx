@@ -41,7 +41,7 @@ export default function ENPartPage() {
   const syncMachineRef = LazySyncContext.useActorRef();
 
   // select parsed AST
-  let ast = LazySyncContext.useSelector(state => state.context.en_source);
+  let ast = LazySyncContext.useSelector(state => state.context.en_source?.ast);
   let mode="Client"
 
   if (ast === undefined) {
@@ -65,6 +65,7 @@ export default function ENPartPage() {
   return (
     <div className="wrapper">
       <Navigate section={partIndex} />
+      <h2>Render mode: {mode}</h2>
       {sectionNode}
       <Navigate section={partIndex} />
     </div>

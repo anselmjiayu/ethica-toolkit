@@ -5,24 +5,45 @@ import { Token, TokenType } from "./token";
 class ParseError extends Error {
 }
 
-export type ParseResult = Source | undefined;
+// ordered collection of references in a label
+export type LabelRefs = Map<number, string>;
+
+// LabelRefs in parsed source with indexed lookup
+type IndexCollection = Map<string, {
+  label: Label,
+  refs: LabelRefs
+}>;
+
+export type ParseResult = {
+  ast: Source | undefined,
+  index: IndexCollection | undefined,
+  error: ParseError | undefined,
+};
 
 export class Parser {
   private readonly tokens: Token[];
   private current: number = 0;
 
-  constructor(tokens: Token[]) {
+  // If turned on, generate index table while parsing and include in parse result
+  private readonly INDEX_MODE: boolean;
+  private index: IndexCollection = new Map();
+
+  constructor(tokens: Token[], INDEX_MODE?: boolean) {
     this.tokens = tokens;
+    this.INDEX_MODE = INDEX_MODE !== undefined ? INDEX_MODE : false;
   }
+
   parse(): ParseResult {
-    let ast;
+    let ast, index, error;
     try {
       ast = this.source();
     } catch(e) {
       this.synchronize();
+      error = e as ParseError;
       console.error("Error happened while parsing:", e);
     }
-    return ast;
+    if (this.INDEX_MODE) index = this.index;
+    return { ast, index, error };
   }
 
   private source(): Source {
@@ -86,6 +107,7 @@ export class Parser {
         expr = this.proposition();
         label = "Prop. " + serialIndex + ": ";
       }
+      
     } else if (this.match(TokenType.SUBEXPRESSION)) {
       if (this.matchDem()) {
         expr = this.demonstration();
@@ -111,9 +133,29 @@ export class Parser {
     const idx = expr.term.index;
     if(idx === undefined)
     throw this.error(expr.term, "Expect index to exist on a label")
-    const token = new Token(TokenType.LABEL, label, {expr}, idx);
-    return new Label(token, expr);
 
+    const token = new Token(TokenType.LABEL, label, {expr}, idx);
+    const labelExpr = new Label(token, expr);
+
+    // If indexing flag is turned on, set entry in index map
+    if (this.INDEX_MODE) {
+      const refMap = this.indexLabel(expr.term.lexeme);
+      this.index.set(idx, {
+        label: labelExpr,
+        refs: refMap,
+      })
+    }
+
+    return labelExpr;
+  }
+
+  private indexLabel(lexeme: string): LabelRefs {
+    const indexMatches = lexeme.matchAll(Parser.indexRx);
+
+    // for each match in the iterable, match[1] is the first capture group in the regular expression
+    // the arrow function constructs an entry to feed into the map constructor
+    return new Map(Array.from(indexMatches, 
+      (match, idx) => [idx, match[1]]))
   }
 
   private serialIndex(index: string): string {
@@ -302,4 +344,6 @@ export class Parser {
     console.error("Parse error at: ", token.toString(), message);
     return new ParseError();
   }
+
+  static indexRx = /\[[^\]]+\]\(([\w\s]+)\)/g;
 }

@@ -5,5 +5,5 @@ import { Parser } from "~/interpreter/parser";
 const scanner = new Scanner(Input);
 const tokens = scanner.run();
 const parser = new Parser(tokens);
-export const la_ast = parser.parse();
+export const la_ast = parser.parse().ast;
 

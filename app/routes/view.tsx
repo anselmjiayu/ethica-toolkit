@@ -42,8 +42,8 @@ export default function ViewSplit() {
 
   function getAstBranch(view: string, part: string) {
     // provide default params
-    let a = view === "en" ? LazySyncContext.useSelector(state => state.context.en_source) 
-      : LazySyncContext.useSelector(state => state.context.la_source);
+    let a = view === "en" ? LazySyncContext.useSelector(state => state.context.en_source?.ast) 
+      : LazySyncContext.useSelector(state => state.context.la_source?.ast);
     if (a === undefined) {
       switch(view) {
         case "en":
