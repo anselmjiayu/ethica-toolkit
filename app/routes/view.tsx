@@ -4,6 +4,8 @@ import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 import { links as frameLinks } from "~/components/frame-view";
 import { LazySyncContext, SourceEditions } from "~/actors/lazySyncMachine";
+import { en_ast } from "~/runtime/en_elwes_instance";
+import { la_ast } from "~/runtime/la_gebhardt_instance";
 
 export const links: LinksFunction = () => [
     ...frameLinks(),
@@ -40,15 +42,19 @@ export default function ViewSplit() {
 
   function getAstBranch(view: string, part: string) {
     // provide default params
-    const a = view === "en" ? LazySyncContext.useSelector(state => state.context.en_source) 
+    let a = view === "en" ? LazySyncContext.useSelector(state => state.context.en_source) 
       : LazySyncContext.useSelector(state => state.context.la_source);
     if (a === undefined) {
       switch(view) {
         case "en":
           syncMachineRef.send({type: 'FETCH', edition: SourceEditions.EN_ELWES});
+          // provide SSR
+          a = en_ast;
           break;
         default:
           syncMachineRef.send({type: 'FETCH', edition: SourceEditions.LA_GEBHARDT});
+          // provide SSR
+          a = la_ast;
       }
     }
     const idx = part.match(part_rx) ? Number.parseInt(part) : 1;
@@ -73,9 +79,9 @@ export default function ViewSplit() {
 
   const interpreter1 = new Interpreter(defaultInterpreterStyles, configCreator(view1, interpreter1ParamsProducer));
   const interpreter2 = new Interpreter(defaultInterpreterStyles, configCreator(view2, interpreter2ParamsProducer));
-  const loadingNode = (<h2>Loading...</h2>);
-  const sectionNode1 = ast1 !== undefined ? interpreter1.interpret(ast1) : loadingNode;
-  const sectionNode2 = ast2 !== undefined ? interpreter2.interpret(ast2) : loadingNode;
+  const errorNode = (<h2>Something went wrong!</h2>);
+  const sectionNode1 = ast1 !== undefined ? interpreter1.interpret(ast1) : errorNode;
+  const sectionNode2 = ast2 !== undefined ? interpreter2.interpret(ast2) : errorNode;
 
     return (
         <div className="view-wrapper">

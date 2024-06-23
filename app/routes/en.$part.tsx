@@ -30,6 +30,9 @@ const config: InterpreterConfig = {
 
 const interpreter = new Interpreter(defaultInterpreterStyles, config);
 
+// Redundancy to support rendering without JS and potentially improve initial load cost
+import { en_ast } from "~/runtime/en_elwes_instance";
+
 
 export default function ENPartPage() {
   const partIndex = useLoaderData<typeof loader>();
@@ -38,11 +41,14 @@ export default function ENPartPage() {
   const syncMachineRef = LazySyncContext.useActorRef();
 
   // select parsed AST
-  const ast = LazySyncContext.useSelector(state => state.context.en_source);
+  let ast = LazySyncContext.useSelector(state => state.context.en_source);
+  let mode="Client"
 
   if (ast === undefined) {
     // data has not been parsed, attempt to load and parse source
     syncMachineRef.send({ type: "FETCH", edition: SourceEditions.EN_ELWES});
+    ast = en_ast;
+    mode = "Server";
   }
 
   // get current part/branch
@@ -51,7 +57,8 @@ export default function ENPartPage() {
   if (!section) return (
     // there is no data, nothing left to do
     <div className="wrapper">
-    <h2>Loading...</h2>
+    <h2>500</h2>
+    <h3>An error happened...</h3>
     </div>);
 
   const sectionNode = interpreter.interpret(section);

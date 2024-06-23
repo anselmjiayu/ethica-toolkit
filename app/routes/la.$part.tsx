@@ -9,6 +9,7 @@ export const links: LinksFunction = () => [
 ];
 
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
+import { la_ast } from "~/runtime/la_gebhardt_instance";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 
 export function loader({ params }: LoaderFunctionArgs) {
@@ -35,11 +36,13 @@ export default function LAPartPage() {
   const syncMachineRef = LazySyncContext.useActorRef();
   
   // select parsed AST
-  const ast = LazySyncContext.useSelector(state => state.context.la_source);
+  let ast = LazySyncContext.useSelector(state => state.context.la_source);
 
   if (ast === undefined) {
     // data has not been parsed, attempt to load and parse source
     syncMachineRef.send({ type: "FETCH", edition: SourceEditions.LA_GEBHARDT});
+    // pre-parsed AST to support SSR
+    ast = la_ast;
   }
 
   // get current part/branch
@@ -48,7 +51,8 @@ export default function LAPartPage() {
   if (!section) return (
     // there is no data, nothing left to do
     <div className="wrapper">
-    <h2>Loading...</h2>
+    <h2>500</h2>
+    <h3>An error happened...</h3>
     </div>);
 
   const sectionNode = interpreter.interpret(section);
