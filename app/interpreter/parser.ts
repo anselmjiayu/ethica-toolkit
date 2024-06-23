@@ -9,7 +9,7 @@ class ParseError extends Error {
 export type LabelRefs = Map<number, string>;
 
 // LabelRefs in parsed source with indexed lookup
-type IndexCollection = Map<string, {
+export type IndexCollection = Map<string, {
   label: Label,
   refs: LabelRefs
 }>;

@@ -2,7 +2,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 import { links as frameLinks } from "~/components/frame-full";
-import { LazySyncContext, SourceEditions } from "~/actors/lazySyncMachine";
+import { LazySyncContext, RenderMode, SourceEditions } from "~/actors/lazySyncMachine";
 import { prefs } from "~/components/header/prefs-cookie";
 
 export const links: LinksFunction = () => [
@@ -42,13 +42,13 @@ export default function ENPartPage() {
 
   // select parsed AST
   let ast = LazySyncContext.useSelector(state => state.context.en_source?.ast);
-  let mode="Client"
+  let mode: RenderMode = RenderMode.Client;
 
   if (ast === undefined) {
     // data has not been parsed, attempt to load and parse source
     syncMachineRef.send({ type: "FETCH", edition: SourceEditions.EN_ELWES});
     ast = en_ast;
-    mode = "Server";
+    mode = RenderMode.Server;
   }
 
   // get current part/branch
