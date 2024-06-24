@@ -11,8 +11,8 @@ import ShowHints from "~/components/modal/ShowHints";
 import { useSelector } from "@xstate/react";
 
 // utility types for machine actors
-import type { PageRenderMachine } from "~/actors/pageRenderMachine";
-import type { SnapshotFrom } from "xstate";
+import { KBD_INPUT, type PageRenderMachine } from "~/actors/pageRenderMachine";
+import type { ActorRef, ActorRefFrom, SnapshotFrom } from "xstate";
 
 export const links: LinksFunction = () => [
   ...frameLinks(),
@@ -20,7 +20,7 @@ export const links: LinksFunction = () => [
 
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function loader({ params }: LoaderFunctionArgs) {
   // If index does not fall into 1-5, default to 1
@@ -54,7 +54,7 @@ export default function ENPartPage() {
 
   if (ast === undefined) {
     // data has not been parsed, attempt to load and parse source
-    syncMachineRef.send({ type: "FETCH", edition: SourceEditions.EN_ELWES});
+    syncMachineRef.send({ type: "FETCH", edition: SourceEditions.EN_ELWES });
     ast = en_ast;
     mode = RenderMode.Server;
   }
@@ -65,8 +65,8 @@ export default function ENPartPage() {
   if (!section) return (
     // there is no data, nothing left to do
     <div className="wrapper">
-    <h2>500</h2>
-    <h3>An error happened...</h3>
+      <h2>500</h2>
+      <h3>An error happened...</h3>
     </div>);
 
   const sectionNode = interpreter.interpret(section);
@@ -76,17 +76,25 @@ export default function ENPartPage() {
 
   const renderMachineRef = useSelector(syncMachineRef, en_renderMachineSelector);
 
-  const renderMachineSnapshot: SnapshotFrom<PageRenderMachine> | undefined 
-    = renderMachineRef !== undefined 
-      ? renderMachineRef.getSnapshot() 
+  const renderMachineSnapshot: SnapshotFrom<PageRenderMachine> | undefined
+    = renderMachineRef !== undefined
+      ? renderMachineRef.getSnapshot()
       // if not available, do nothing
-      : undefined; 
+      : undefined;
 
-  const toggleModal: ()=> void = (
+  const toggleModal: () => void = (
     renderMachineRef === undefined
-    ? () => {}
-    : () => renderMachineRef.send({type: 'TOGGLE_MODAL'})
+      ? () => { }
+      : () => renderMachineRef.send({ type: 'TOGGLE_MODAL' })
   )
+
+
+  const sendKeyEvent: (event: KeyboardEvent) => void =
+    (renderMachineRef === undefined
+      ? (_event) => { 
+        ;
+      }
+      : keyEventDispatcherCreator(renderMachineRef));
 
   if (renderMachineRef !== undefined) {
     renderMachineRef.subscribe((snapshot) => {
@@ -97,17 +105,32 @@ export default function ENPartPage() {
     if (headerHintElement) headerHintElement.onclick = toggleModal;
   }
 
+  /***
+    listening to keyboard input is a valid use case of useEffect
+    see https://react.dev/reference/react/useEffect#connecting-to-an-external-system
+    ***/
+
+  // client-only
+  useEffect(() => {
+    window.addEventListener('keydown', sendKeyEvent);
+    // cleanup
+    return () => {
+      window.removeEventListener('keydown', sendKeyEvent);
+    }
+    // use dependency array to re-attach listeners on page refresh
+  }, [renderMachineRef])
+
   return (
     <>
-    <ModalRoot show={showModal} handleClose={toggleModal}>
+      <div className="wrapper">
+        <Navigate section={partIndex} />
+        {sectionNode}
+        <Navigate section={partIndex} />
+      </div>
+      {/* place modal after main content to reduce layout shift */}
+      <ModalRoot show={showModal} handleClose={toggleModal}>
         <ShowHints />
-    </ModalRoot>
-    <div className="wrapper">
-      <Navigate section={partIndex} />
-        <button onClick={toggleModal}>Show key bindings</button>
-      {sectionNode}
-      <Navigate section={partIndex} />
-    </div>
+      </ModalRoot>
     </>
   );
 }
@@ -126,4 +149,28 @@ function Navigate({ section }: { section: number }) {
       {section === 5 ? <span>End</span> : <Link to={"/en/" + (section + 1)}>{">>"}</Link>}
     </div>
   </nav>)
+}
+
+// takes a ref of a page render machine instance, and produces an event dispatcher that takes in a keyboard input event
+
+function keyEventDispatcherCreator (renderRef: ActorRefFrom<PageRenderMachine>){
+ return function(event: KeyboardEvent) {
+    console.log("Key pressed: " + event.key);
+    switch (event.key) {
+      case 'a':
+      case 'A':
+        renderRef.send({ type: 'INPUT', key: KBD_INPUT.A });
+        break;
+      case '?':
+        renderRef.send({ type: 'INPUT', key: KBD_INPUT.HELP });
+        break;
+      case 'Escape':
+        renderRef.send({ type: 'INPUT', key: KBD_INPUT.ESC });
+        break;
+      case '\\':
+      renderRef.send({ type: 'INPUT', key: KBD_INPUT.BACKSLASH});
+      default:
+        break;
+    }
+  }
 }

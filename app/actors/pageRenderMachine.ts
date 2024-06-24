@@ -1,4 +1,4 @@
-import { SnapshotFrom, assertEvent, assign, raise, setup } from "xstate";
+import { assertEvent, assign, raise, setup } from "xstate";
 import { IndexCollection } from "~/interpreter/parser";
 import { Source } from "~/types/Stmt";
 import { labelMachine } from "./labelMachine";
@@ -41,22 +41,24 @@ export enum KBD_INPUT {
   HELP,
   ESC,
   ENTER,
+  BACKSLASH,
 };
 
 export const pageRenderMachine = setup({
   types: {
     context: {} as PageContext,
     events: {} as
-      | { type: 'TOGGLE_MODAL' }
-      | { type: 'NEXT_LABEL' }
-      | { type: 'PREV_LABEL' }
-      | { type: 'JMP', offset: number }
-      | { type: 'GOTO', position: number }
-      | { type: 'FOCUS_LABEL', index: string }
-      | { type: 'UNFOCUS_LABEL' }
-      | { type: 'CLEAR_LABEL_REF' }
-      | { type: 'CLEAR_ALL_REF' }
-      | { type: 'INPUT', key: KBD_INPUT }
+    | { type: 'TOGGLE_MODAL' }
+    | { type: 'NEXT_LABEL' }
+    | { type: 'PREV_LABEL' }
+    | { type: 'JMP', offset: number }
+    | { type: 'GOTO', position: number }
+    | { type: 'FOCUS_LABEL', index: string }
+    | { type: 'UNFOCUS_LABEL' }
+    | { type: 'CLEAR_LABEL_REF' }
+    | { type: 'CLEAR_ALL_REF' }
+    | { type: 'INPUT', key: KBD_INPUT }
+    | {type: 'NOOP'}
     ,
     input: {} as {
       source: Source,
@@ -90,6 +92,16 @@ export const pageRenderMachine = setup({
     normal: {
       initial: 'inactive',
       on: {
+        INPUT: {
+          actions: raise(({event}) => {
+            switch(event.key) {
+              case KBD_INPUT.HELP:
+              return {type: 'TOGGLE_MODAL'};
+              default:
+              return {type: 'NOOP'}
+            }
+          })
+        },
         TOGGLE_MODAL: {
           target: 'modal',
         }
@@ -152,6 +164,16 @@ export const pageRenderMachine = setup({
     },
     modal: {
       on: {
+        INPUT: {
+          actions: raise(({event}) => {
+            switch(event.key) {
+              case KBD_INPUT.ESC:
+              return {type: 'TOGGLE_MODAL'};
+              default:
+              return {type: 'NOOP'}
+            }
+          })
+        },
         TOGGLE_MODAL: {
           // restore last active normal state
           target: 'normal.hist'

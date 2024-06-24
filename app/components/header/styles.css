@@ -9,6 +9,10 @@
   font-family: var(--sans);
 }
 
+.navbar.display-hide {
+  display: none;
+}
+
 .navbar.light, .navbar.system {
     background-color: var(--lightgrey);
 }

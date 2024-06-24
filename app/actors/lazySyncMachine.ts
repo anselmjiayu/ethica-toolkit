@@ -1,6 +1,6 @@
 import { ActorRefFrom, Snapshot, SnapshotFrom, assign, setup } from "xstate";
 import { instanceMachine } from "./instanceMachine";
-import { pageRenderMachine } from "./pageRenderMachine";
+import { PageRenderMachine, pageRenderMachine } from "./pageRenderMachine";
 
 // ""raw"" serial data
 import en_input from "~/data/spinoza-ethica-en-elwes.json";
@@ -29,8 +29,8 @@ type LazyContext = {
   la_source: ParseResult | undefined,
   // A register for next serial data to parse
   next_source_type: SourceEditions,
-  en_machineRef: ActorRefFrom<typeof pageRenderMachine> | undefined,
-  la_machineRef: ActorRefFrom<typeof pageRenderMachine> | undefined,
+  en_machineRef: ActorRefFrom<PageRenderMachine> | undefined,
+  la_machineRef: ActorRefFrom<PageRenderMachine> | undefined,
 }
 
 export const lazySyncMachine = setup({
