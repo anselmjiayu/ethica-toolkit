@@ -4,7 +4,9 @@
 }
 
 .wrapper {
-  padding: 2rem 4rem 2rem 4rem;
+
+  /* thin padding on mobile */
+  padding: 1rem;
   margin: auto;
   margin-top: 100px;
   max-width: 800px;
@@ -110,8 +112,21 @@ p {
 }
 
 @media(min-width: 700px) {
+  
+  /* wider padding around text */
+  .wrapper {
+    padding: 2rem;
+  }
   .part-nav {
     grid-template-rows: unset;
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media(min-width: 900px) {
+  /* wider padding around text */
+  .wrapper {
+    padding-left: 4rem;
+    padding-right: 4rem;
   }
 }

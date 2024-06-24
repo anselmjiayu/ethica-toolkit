@@ -1,4 +1,4 @@
-import { assertEvent, assign, raise, setup } from "xstate";
+import { SnapshotFrom, assertEvent, assign, raise, setup } from "xstate";
 import { IndexCollection } from "~/interpreter/parser";
 import { Source } from "~/types/Stmt";
 import { labelMachine } from "./labelMachine";
@@ -160,3 +160,5 @@ export const pageRenderMachine = setup({
     }
   }
 })
+
+export type PageRenderMachine = typeof pageRenderMachine;

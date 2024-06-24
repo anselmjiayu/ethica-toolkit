@@ -47,6 +47,7 @@ html {
 
     /* other variables */
     --radius: 3px;
+    --radius-lg: 7px;
     --header-height: 70px;
 }
 

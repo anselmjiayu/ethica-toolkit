@@ -2,8 +2,17 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 import { links as frameLinks } from "~/components/frame-full";
-import { LazySyncContext, RenderMode, SourceEditions } from "~/actors/lazySyncMachine";
-import { prefs } from "~/components/header/prefs-cookie";
+import { LazySyncContext, RenderMode, SourceEditions, en_renderMachineSelector } from "~/actors/lazySyncMachine";
+
+// Redundancy to support rendering without JS and potentially improve initial load cost
+import { en_ast } from "~/runtime/en_elwes_instance";
+import ModalRoot from "~/components/modal/ModalRoot";
+import ShowHints from "~/components/modal/ShowHints";
+import { useSelector } from "@xstate/react";
+
+// utility types for machine actors
+import type { PageRenderMachine } from "~/actors/pageRenderMachine";
+import type { SnapshotFrom } from "xstate";
 
 export const links: LinksFunction = () => [
   ...frameLinks(),
@@ -11,6 +20,7 @@ export const links: LinksFunction = () => [
 
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
+import { useState } from "react";
 
 export function loader({ params }: LoaderFunctionArgs) {
   // If index does not fall into 1-5, default to 1
@@ -30,8 +40,6 @@ const config: InterpreterConfig = {
 
 const interpreter = new Interpreter(defaultInterpreterStyles, config);
 
-// Redundancy to support rendering without JS and potentially improve initial load cost
-import { en_ast } from "~/runtime/en_elwes_instance";
 
 
 export default function ENPartPage() {
@@ -62,13 +70,45 @@ export default function ENPartPage() {
     </div>);
 
   const sectionNode = interpreter.interpret(section);
+
+  // if render machine is not available, do not show modal window
+  const [showModal, setShowModal] = useState(false as boolean)
+
+  const renderMachineRef = useSelector(syncMachineRef, en_renderMachineSelector);
+
+  const renderMachineSnapshot: SnapshotFrom<PageRenderMachine> | undefined 
+    = renderMachineRef !== undefined 
+      ? renderMachineRef.getSnapshot() 
+      // if not available, do nothing
+      : undefined; 
+
+  const toggleModal: ()=> void = (
+    renderMachineRef === undefined
+    ? () => {}
+    : () => renderMachineRef.send({type: 'TOGGLE_MODAL'})
+  )
+
+  if (renderMachineRef !== undefined) {
+    renderMachineRef.subscribe((snapshot) => {
+      setShowModal(snapshot.matches('modal'));
+    });
+    // attach toggle modal function to the "well known" button in header
+    const headerHintElement = document.getElementById("header-show-key-binding-button");
+    if (headerHintElement) headerHintElement.onclick = toggleModal;
+  }
+
   return (
+    <>
+    <ModalRoot show={showModal} handleClose={toggleModal}>
+        <ShowHints />
+    </ModalRoot>
     <div className="wrapper">
       <Navigate section={partIndex} />
-      <h2>Render mode: {mode}</h2>
+        <button onClick={toggleModal}>Show key bindings</button>
       {sectionNode}
       <Navigate section={partIndex} />
     </div>
+    </>
   );
 }
 

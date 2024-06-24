@@ -1,4 +1,4 @@
-import { ActorRefFrom, assign, setup } from "xstate";
+import { ActorRefFrom, Snapshot, SnapshotFrom, assign, setup } from "xstate";
 import { instanceMachine } from "./instanceMachine";
 import { pageRenderMachine } from "./pageRenderMachine";
 
@@ -125,3 +125,7 @@ export const lazySyncMachine = setup({
 })
 
 export const LazySyncContext = createActorContext(lazySyncMachine);
+export type LazySyncMachine = typeof lazySyncMachine;
+
+// pre-compile selector to improve speed: see xstate selector docs
+export const en_renderMachineSelector = (snapshot: SnapshotFrom<LazySyncMachine>) => snapshot.context.en_machineRef;

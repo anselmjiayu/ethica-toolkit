@@ -1,0 +1,110 @@
+.modal-root {
+  --modal-background: #00000033;
+  --modal-window-bg: var(--bg-light);
+  --modal-window-border-sz: 3px;
+  --modal-window-border-color: var(--red);
+  --icon-size: 22px;
+  --modal-text-padding: 15px;
+
+  /* define layout outside page flow */
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 99;
+
+  /* appearance */
+  background-color: var(--modal-background);
+
+  /* by default, do not display */
+  display: none;
+}
+
+/* show modal when show-modal class is added */
+.modal-root.show-modal {
+  display: flex;
+}
+
+.modal-window {
+  /* layout */
+  position: relative;
+  margin: auto;
+  height: 80%;
+  width: 70%;
+  max-width: 850px;
+  border-radius: var(--radius-lg);
+  overflow-y: scroll;
+
+  /* colors */
+  background-color: var(--modal-window-bg);
+  border: var(--modal-window-border-sz) solid var(--modal-window-border-color);
+
+}
+
+.modal-text {
+
+  /* font */
+  font-size: var(--h6);
+  font-family: var(--sans);
+
+  /* layout */
+  margin: auto;
+  /* margin-top: var(--icon-size); */
+  padding: var(--modal-text-padding);
+
+  text-align: center;
+
+}
+
+.modal-text dd,
+dt {
+  display: inline-block;
+}
+
+.modal-text p {
+  font-weight: bold;
+  font-size: var(--small);
+}
+
+.modal-text .kbd-desc {
+  display: flex;
+  justify-content: space-between;
+  padding-left: var(--icon-size);
+  padding-right: var(--icon-size);
+  margin-bottom: 1rem;
+}
+
+.kbd-desc kbd {
+  /*
+Adapted from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd
+* */
+  background-color: #eee;
+  border-radius: 3px;
+  border: 1px solid #b4b4b4;
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.2),
+    0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
+  color: #333;
+  display: inline-block;
+  font-weight: 700;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+
+/* close button */
+.modal-close {
+  position: absolute;
+  height: var(--icon-size);
+  width: var(--icon-size);
+  top: 7px;
+  right: 7px;
+}
+
+.cross-icon {
+  height: 100%;
+}
+
+.cross-icon path {
+  fill: var(--modal-window-border-color);
+}

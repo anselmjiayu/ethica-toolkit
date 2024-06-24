@@ -11,11 +11,13 @@ import {
 
 import styles from "app/index.css?url";
 import { links as headerLinks } from "~/components/header";
+import { links as modalLinks } from "~/components/modal";
 import { prefs } from "./components/header/prefs-cookie";
 import { LazySyncContext } from "~/actors/lazySyncMachine";
 
 export const links: LinksFunction = () => [
   ...headerLinks(),
+  ...modalLinks(),
   { rel: "stylesheet", href: styles },
 ];
 
@@ -104,7 +106,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </summary>
             <ul className="option-menu">
               <li>Edition</li>
-              <li>Key bindings</li>
+              <li>
+                <button id="header-show-key-binding-button">
+                  Key bindings
+                </button>
+              </li>
               <li>About</li>
             </ul>
           </details>
