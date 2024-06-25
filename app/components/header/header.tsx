@@ -3,7 +3,7 @@ import { ThemeContext } from "~/actors/themeMachine";
 
 import { Theme } from "~/actors/themeMachine";
 type EventHandler = () => void;
-type HeaderHandlers = {
+export type HeaderHandlers = {
   onLightTheme: EventHandler,
   onDarkTheme: EventHandler,
   onSystemTheme: EventHandler,

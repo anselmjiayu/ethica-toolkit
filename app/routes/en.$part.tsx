@@ -22,7 +22,7 @@ import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 import { useEffect, useState } from "react";
 import { Theme, ThemeContext } from "~/actors/themeMachine";
-import { Header } from "~/components/header/header";
+import { Header, HeaderHandlers } from "~/components/header/header";
 
 export function loader({ params }: LoaderFunctionArgs) {
   // If index does not fall into 1-5, default to 1
@@ -44,10 +44,11 @@ const interpreter = new Interpreter(defaultInterpreterStyles, config);
 
 const foo = () => { };
 
-const headerHandlers = {
+const headerHandlers: HeaderHandlers = {
   onLightTheme: foo,
   onDarkTheme: foo,
   onSystemTheme: foo,
+  onShowHint: foo,
 }
 
 
@@ -94,7 +95,7 @@ export default function ENPartPage() {
   // if render machine is not available, do not show modal window
   const [showModal, setShowModal] = useState(false as boolean)
   // default to header display
-  let showHeader: boolean = true;
+  const [showHeader, setShowHeader] = useState(true as boolean);
 
   const renderMachineRef = useSelector(syncMachineRef, en_renderMachineSelector);
 
@@ -114,13 +115,14 @@ export default function ENPartPage() {
   if (renderMachineRef !== undefined) {
     renderMachineRef.subscribe((snapshot) => {
       setShowModal(snapshot.matches('modal'));
+      // delegate header display to renderMachine
+      setShowHeader(snapshot.context.showHeader);
     });
     // attach toggle modal function to the "well known" button in header
     const headerHintElement = document.getElementById("header-show-key-binding-button");
     if (headerHintElement) headerHintElement.onclick = toggleModal;
+    // headerHandlers.onShowHint = () => renderMachineRef.send({type: 'TOGGLE_MODAL'});
 
-    // delegate header display to renderMachine
-    showHeader = useSelector(renderMachineRef, ShowHeaderSelector);
   }
 
   /***

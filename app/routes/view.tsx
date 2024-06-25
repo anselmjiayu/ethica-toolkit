@@ -116,7 +116,7 @@ export default function ViewSplit() {
   const [showModal, setShowModal] = useState(false as boolean)
 
   // default to header display
-  let showHeader: boolean = true;
+  const [showHeader, setShowHeader] = useState(true as boolean);
 
   const renderMachineRef = useSelector(syncMachineRef, en_renderMachineSelector);
 
@@ -136,13 +136,12 @@ export default function ViewSplit() {
   if (renderMachineRef !== undefined) {
     renderMachineRef.subscribe((snapshot) => {
       setShowModal(snapshot.matches('modal'));
+      // delegate header display to renderMachine
+      setShowHeader(snapshot.context.showHeader);
     });
     // attach toggle modal function to the "well known" button in header
     const headerHintElement = document.getElementById("header-show-key-binding-button");
     if (headerHintElement) headerHintElement.onclick = toggleModal;
-
-    // delegate header display to renderMachine
-    showHeader = useSelector(renderMachineRef, ShowHeaderSelector);
   }
 
   /***

@@ -9,7 +9,7 @@
   --modal-window-bg-light: var(--bg-light);
   --modal-window-bg-dark: var(--bg-dark);
   --modal-border-light: var(--light-highlight);
-  --modal-border-dark: var(--dark-highlight);
+  --modal-border-dark: var(--argent);
 
   /* default */
   --modal-background: var(--transparent-overlay-dark);
@@ -17,8 +17,7 @@
   --modal-window-border-color: var(--modal-border-dark);
 }
 
-.dark .modal-root,
-.modal-root.dark {
+.dark .modal-root {
   --modal-background: var(--transparent-overlay-light);
   --modal-window-bg: var(--bg-dark);
   --modal-window-border-color: var(--modal-border-light);
@@ -34,11 +33,12 @@
 
 .modal-root {
   /* define layout outside page flow */
-  position: absolute;
+  position: fixed;
   height: 100%;
   width: 100%;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 99;
 
   /* appearance */
@@ -67,13 +67,18 @@
   background-color: var(--modal-window-bg);
   border: var(--modal-window-border-sz) solid var(--modal-window-border-color);
 
+  /* animation */
+  animation-name: slide-in;
+  animation-duration: 0.3s;
+  animation-timing-function: ease;
+  animation-fill-mode: both;
 }
 
 .modal-text {
 
   /* font */
   font-size: var(--h6);
-  font-family: var(--sans);
+  font-family: var(--serif);
 
   /* layout */
   margin: auto;
@@ -97,8 +102,11 @@ dt {
 .modal-text .kbd-desc {
   display: flex;
   justify-content: space-between;
+  max-width: 400px;
+  align-self: center;
   padding-left: var(--icon-size);
   padding-right: var(--icon-size);
+  margin: auto;
   margin-bottom: 1rem;
 }
 
@@ -106,16 +114,18 @@ dt {
   /*
 Adapted from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd
 * */
-  background-color: #eee;
+  background-color: var(--modal-window-bg);
   border-radius: 3px;
-  border: 1px solid #b4b4b4;
+  border: 1px solid var(--modal-window-border-color);
   box-shadow:
     0 1px 1px rgba(0, 0, 0, 0.2),
     0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
-  color: #333;
+  color: var(--themed-text-color);
   display: inline-block;
-  font-weight: 700;
+  font-weight: 600;
   padding: 2px 4px;
+  margin-left: 2px;
+  margin-right: 2px;
   white-space: nowrap;
 }
 
@@ -134,4 +144,14 @@ Adapted from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd
 
 .cross-icon path {
   fill: var(--modal-window-border-color);
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(65%);
+  }
+
+  to {
+    transform: translateY(0%);
+  }
 }

@@ -7,6 +7,12 @@
   justify-content: space-between;
   align-items: center;
   font-family: var(--sans);
+
+  /* animation */
+  animation-name: slide-down;
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+  animation-timing-function: ease-out;
 }
 
 .navbar.display-hide {
@@ -114,3 +120,11 @@ li:last-of-type {
 }
 }
 
+@keyframes slide-down {
+  from {
+  transform: translateY(-100%);
+}
+  to {
+  transform: translateY(0%);
+}
+}
