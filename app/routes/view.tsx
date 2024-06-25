@@ -3,9 +3,16 @@ import { useLoaderData } from "@remix-run/react";
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 import { links as frameLinks } from "~/components/frame-view";
-import { LazySyncContext, SourceEditions } from "~/actors/lazySyncMachine";
+import { LazySyncContext, SourceEditions, en_renderMachineSelector } from "~/actors/lazySyncMachine";
 import { en_ast } from "~/runtime/en_elwes_instance";
 import { la_ast } from "~/runtime/la_gebhardt_instance";
+import { useEffect, useState } from "react";
+import { useSelector } from "@xstate/react";
+import { keyEventDispatcherCreator } from "~/actors/pageRenderMachine";
+import { Theme, ThemeContext } from "~/actors/themeMachine";
+import ModalRoot from "~/components/modal/ModalRoot";
+import ShowHints from "~/components/modal/ShowHints";
+import { Header } from "~/components/header/header";
 
 export const links: LinksFunction = () => [
     ...frameLinks(),
@@ -35,6 +42,16 @@ const configCreator = (prefix: string, paramsProducer: (part: number) => string)
 
 
 const part_rx = /^[1-5]$/;
+
+
+const foo = () => { };
+
+const headerHandlers = {
+  onLightTheme: foo,
+  onDarkTheme: foo,
+  onSystemTheme: foo,
+}
+
 
 export default function ViewSplit() {
 
@@ -83,12 +100,75 @@ export default function ViewSplit() {
   const sectionNode1 = ast1 !== undefined ? interpreter1.interpret(ast1) : errorNode;
   const sectionNode2 = ast2 !== undefined ? interpreter2.interpret(ast2) : errorNode;
 
+
+  // if render machine is not available, do not show modal window
+  const [showModal, setShowModal] = useState(false as boolean)
+
+  const renderMachineRef = useSelector(syncMachineRef, en_renderMachineSelector);
+
+  const toggleModal: () => void = (
+    renderMachineRef === undefined
+      ? () => { }
+      : () => renderMachineRef.send({ type: 'TOGGLE_MODAL' })
+  )
+
+  const sendKeyEvent: (event: KeyboardEvent) => void =
+    (renderMachineRef === undefined
+      ? (_event) => {
+        ;
+      }
+      : keyEventDispatcherCreator(renderMachineRef));
+
+  if (renderMachineRef !== undefined) {
+    renderMachineRef.subscribe((snapshot) => {
+      setShowModal(snapshot.matches('modal'));
+    });
+    // attach toggle modal function to the "well known" button in header
+    const headerHintElement = document.getElementById("header-show-key-binding-button");
+    if (headerHintElement) headerHintElement.onclick = toggleModal;
+  }
+
+  /***
+    listening to keyboard input is a valid use case of useEffect
+    see https://react.dev/reference/react/useEffect#connecting-to-an-external-system
+    ***/
+
+  // client-only
+  useEffect(() => {
+    window.addEventListener('keydown', sendKeyEvent);
+    // cleanup
+    return () => {
+      window.removeEventListener('keydown', sendKeyEvent);
+    }
+    // use dependency array to re-attach listeners on page refresh
+  }, [renderMachineRef])
+
+  // styling
+  const themeActorRef = ThemeContext.useActorRef();
+
+  const [theme, setTheme] = useState("system" as Theme);
+
+
+  themeActorRef.subscribe((snapshot) => {
+    setTheme(snapshot.value);
+  })
+
     return (
+    <div className={"body" + " " + theme}>
+      <Header
+        show={true}
+        eventHandlers={headerHandlers}
+      />
         <div className="view-wrapper">
             <div className="placeholder"/>
             <div className="wrapper view view1">{sectionNode1}</div>
             <div className="separator"/>
             <div className="wrapper view view2">{sectionNode2}</div>
         </div>
+      {/* place modal after main content to reduce layout shift */}
+      <ModalRoot show={showModal} handleClose={toggleModal}>
+        <ShowHints />
+      </ModalRoot>
+    </div>
     )
 }

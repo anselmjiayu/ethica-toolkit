@@ -1,4 +1,4 @@
-import { assertEvent, assign, raise, setup } from "xstate";
+import { ActorRefFrom, assertEvent, assign, raise, setup } from "xstate";
 import { IndexCollection } from "~/interpreter/parser";
 import { Source } from "~/types/Stmt";
 import { labelMachine } from "./labelMachine";
@@ -184,3 +184,27 @@ export const pageRenderMachine = setup({
 })
 
 export type PageRenderMachine = typeof pageRenderMachine;
+
+// takes a ref of a page render machine instance, and produces an event dispatcher that takes in a keyboard input event
+
+export function keyEventDispatcherCreator(renderRef: ActorRefFrom<PageRenderMachine>) {
+  return function(event: KeyboardEvent) {
+    console.log("Key pressed: " + event.key);
+    switch (event.key) {
+      case 'a':
+      case 'A':
+        renderRef.send({ type: 'INPUT', key: KBD_INPUT.A });
+        break;
+      case '?':
+        renderRef.send({ type: 'INPUT', key: KBD_INPUT.HELP });
+        break;
+      case 'Escape':
+        renderRef.send({ type: 'INPUT', key: KBD_INPUT.ESC });
+        break;
+      case '\\':
+        renderRef.send({ type: 'INPUT', key: KBD_INPUT.BACKSLASH });
+      default:
+        break;
+    }
+  }
+}

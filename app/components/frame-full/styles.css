@@ -116,6 +116,7 @@ p {
   /* wider padding around text */
   .wrapper {
     padding: 2rem;
+    padding-top: 100px;
   }
   .part-nav {
     grid-template-rows: unset;

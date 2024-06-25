@@ -11,7 +11,7 @@ import ShowHints from "~/components/modal/ShowHints";
 import { useSelector } from "@xstate/react";
 
 // utility types for machine actors
-import { KBD_INPUT, type PageRenderMachine } from "~/actors/pageRenderMachine";
+import { KBD_INPUT, keyEventDispatcherCreator, type PageRenderMachine } from "~/actors/pageRenderMachine";
 import type { ActorRef, ActorRefFrom, SnapshotFrom } from "xstate";
 
 export const links: LinksFunction = () => [
@@ -167,26 +167,3 @@ function Navigate({ section }: { section: number }) {
   </nav>)
 }
 
-// takes a ref of a page render machine instance, and produces an event dispatcher that takes in a keyboard input event
-
-function keyEventDispatcherCreator(renderRef: ActorRefFrom<PageRenderMachine>) {
-  return function(event: KeyboardEvent) {
-    console.log("Key pressed: " + event.key);
-    switch (event.key) {
-      case 'a':
-      case 'A':
-        renderRef.send({ type: 'INPUT', key: KBD_INPUT.A });
-        break;
-      case '?':
-        renderRef.send({ type: 'INPUT', key: KBD_INPUT.HELP });
-        break;
-      case 'Escape':
-        renderRef.send({ type: 'INPUT', key: KBD_INPUT.ESC });
-        break;
-      case '\\':
-        renderRef.send({ type: 'INPUT', key: KBD_INPUT.BACKSLASH });
-      default:
-        break;
-    }
-  }
-}
