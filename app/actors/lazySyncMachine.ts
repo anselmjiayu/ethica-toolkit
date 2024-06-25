@@ -8,6 +8,7 @@ import la_input from "~/data/spinoza-ethica-lat-gebhardt.json";
 
 import { ParseResult } from "~/interpreter/parser";
 import { createActorContext } from "@xstate/react";
+import { ThemeMachine } from "./themeMachine";
 
 export enum SourceEditions {
   NULL,
@@ -31,31 +32,48 @@ type LazyContext = {
   next_source_type: SourceEditions,
   en_machineRef: ActorRefFrom<PageRenderMachine> | undefined,
   la_machineRef: ActorRefFrom<PageRenderMachine> | undefined,
+
+  // theme actor ref to pass to renderMachines
+  themeActor: ActorRefFrom<ThemeMachine> | undefined,
 }
 
 export const lazySyncMachine = setup({
   types: {
     events: {} as
-      | { type: 'FETCH', edition: SourceEditions }
-      | { type: 'RETRY' },
+    | { type: 'FETCH', edition: SourceEditions }
+    | {type:'INITIALIZE', themeActor: ActorRefFrom<ThemeMachine>}
+    | { type: 'RETRY' },
     context: {} as LazyContext,
   },
   actors: {
     instanceMachine,
     pageRenderMachine
-  }
+  },
+
 }).createMachine({
   id: 'instanceContext',
   // parse nothing by default
-  context: {
-    en_source: undefined,
-    la_source: undefined,
-    next_source_type: SourceEditions.NULL,
-    en_machineRef: undefined,
-    la_machineRef: undefined,
+  context: 
+    {
+      en_source: undefined,
+      la_source: undefined,
+      next_source_type: SourceEditions.NULL,
+      en_machineRef: undefined,
+      la_machineRef: undefined,
+      themeActor: undefined,
   },
-  initial: 'idle',
+  initial: 'init',
   states: {
+    init: {
+      on: {
+        'INITIALIZE': {
+          target: 'idle',
+          actions: assign({
+            themeActor: ({event}) => event.themeActor
+          })
+        }
+      }
+    },
     idle: {
       on: {
         'FETCH': {
@@ -94,14 +112,14 @@ export const lazySyncMachine = setup({
                 return {
                   en_source: event.output.parseResult,
                   en_machineRef: spawn(pageRenderMachine, {
-                    input: { source, indexMap }
+                    input: { source, indexMap, themeActor: context.themeActor! }
                   })
                 };
               case SourceEditions.LA_GEBHARDT:
                 return {
                   la_source: event.output.parseResult,
                   la_machineRef: spawn(pageRenderMachine, {
-                    input: { source, indexMap }
+                    input: { source, indexMap, themeActor: context.themeActor! }
                   })
                 };
               case SourceEditions.NULL:

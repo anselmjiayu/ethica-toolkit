@@ -6,7 +6,7 @@ export default function ShowHints() {
         <dl>
           <div className="kbd-desc">
             <dt>
-              <kbd>?</kbd> / <kbd>Shift</kbd> + <kbd>/</kbd>
+              <kbd>?</kbd> / <kbd>H</kbd>
             </dt>
             <dd>
               Show this menu
@@ -33,6 +33,19 @@ export default function ShowHints() {
             </dt>
             <dd>
               Toggle Header
+            </dd>
+          </div>
+        </dl>
+      </div>
+      <div>
+        <p>Theme</p>
+        <dl>
+          <div className="kbd-desc">
+            <dt>
+              <kbd>Shift</kbd>+<kbd>R</kbd>
+            </dt>
+            <dd>
+              Invert Theme Color
             </dd>
           </div>
         </dl>

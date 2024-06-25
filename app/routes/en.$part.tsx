@@ -11,8 +11,8 @@ import ShowHints from "~/components/modal/ShowHints";
 import { useSelector } from "@xstate/react";
 
 // utility types for machine actors
-import { KBD_INPUT, keyEventDispatcherCreator, type PageRenderMachine } from "~/actors/pageRenderMachine";
-import type { ActorRef, ActorRefFrom, SnapshotFrom } from "xstate";
+import { ShowHeaderSelector, keyEventDispatcherCreator } from "~/actors/pageRenderMachine";
+
 
 export const links: LinksFunction = () => [
   ...frameLinks(),
@@ -54,6 +54,16 @@ const headerHandlers = {
 export default function ENPartPage() {
   const partIndex = useLoaderData<typeof loader>();
 
+  // styling
+  const themeActorRef = ThemeContext.useActorRef();
+
+  const [theme, setTheme] = useState("system" as Theme);
+
+
+  themeActorRef.subscribe((snapshot) => {
+    setTheme(snapshot.value);
+  })
+
   // this is the global source data state machine
   const syncMachineRef = LazySyncContext.useActorRef();
 
@@ -63,6 +73,7 @@ export default function ENPartPage() {
 
   if (ast === undefined) {
     // data has not been parsed, attempt to load and parse source
+    syncMachineRef.send({type: "INITIALIZE", themeActor: themeActorRef});
     syncMachineRef.send({ type: "FETCH", edition: SourceEditions.EN_ELWES });
     ast = en_ast;
     mode = RenderMode.Server;
@@ -82,6 +93,8 @@ export default function ENPartPage() {
 
   // if render machine is not available, do not show modal window
   const [showModal, setShowModal] = useState(false as boolean)
+  // default to header display
+  let showHeader: boolean = true;
 
   const renderMachineRef = useSelector(syncMachineRef, en_renderMachineSelector);
 
@@ -105,6 +118,9 @@ export default function ENPartPage() {
     // attach toggle modal function to the "well known" button in header
     const headerHintElement = document.getElementById("header-show-key-binding-button");
     if (headerHintElement) headerHintElement.onclick = toggleModal;
+
+    // delegate header display to renderMachine
+    showHeader = useSelector(renderMachineRef, ShowHeaderSelector);
   }
 
   /***
@@ -122,20 +138,11 @@ export default function ENPartPage() {
     // use dependency array to re-attach listeners on page refresh
   }, [renderMachineRef])
 
-  // styling
-  const themeActorRef = ThemeContext.useActorRef();
-
-  const [theme, setTheme] = useState("system" as Theme);
-
-
-  themeActorRef.subscribe((snapshot) => {
-    setTheme(snapshot.value);
-  })
 
   return (
     <div className={"body" + " " + theme}>
       <Header
-        show={true}
+        show={showHeader}
         eventHandlers={headerHandlers}
       />
       <div className="wrapper">

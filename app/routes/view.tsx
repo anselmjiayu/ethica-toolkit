@@ -8,7 +8,7 @@ import { en_ast } from "~/runtime/en_elwes_instance";
 import { la_ast } from "~/runtime/la_gebhardt_instance";
 import { useEffect, useState } from "react";
 import { useSelector } from "@xstate/react";
-import { keyEventDispatcherCreator } from "~/actors/pageRenderMachine";
+import { ShowHeaderSelector, keyEventDispatcherCreator } from "~/actors/pageRenderMachine";
 import { Theme, ThemeContext } from "~/actors/themeMachine";
 import ModalRoot from "~/components/modal/ModalRoot";
 import ShowHints from "~/components/modal/ShowHints";
@@ -57,6 +57,15 @@ export default function ViewSplit() {
 
   const syncMachineRef = LazySyncContext.useActorRef();
 
+  // styling
+  const themeActorRef = ThemeContext.useActorRef();
+
+  const [theme, setTheme] = useState("system" as Theme);
+
+
+  themeActorRef.subscribe((snapshot) => {
+    setTheme(snapshot.value);
+  })
   function getAstBranch(view: string, part: string) {
     // provide default params
     let a = view === "en" ? LazySyncContext.useSelector(state => state.context.en_source?.ast) 
@@ -64,11 +73,13 @@ export default function ViewSplit() {
     if (a === undefined) {
       switch(view) {
         case "en":
+          syncMachineRef.send({type: "INITIALIZE", themeActor: themeActorRef});
           syncMachineRef.send({type: 'FETCH', edition: SourceEditions.EN_ELWES});
           // provide SSR
           a = en_ast;
           break;
         default:
+          syncMachineRef.send({type: "INITIALIZE", themeActor: themeActorRef});
           syncMachineRef.send({type: 'FETCH', edition: SourceEditions.LA_GEBHARDT});
           // provide SSR
           a = la_ast;
@@ -104,6 +115,9 @@ export default function ViewSplit() {
   // if render machine is not available, do not show modal window
   const [showModal, setShowModal] = useState(false as boolean)
 
+  // default to header display
+  let showHeader: boolean = true;
+
   const renderMachineRef = useSelector(syncMachineRef, en_renderMachineSelector);
 
   const toggleModal: () => void = (
@@ -126,6 +140,9 @@ export default function ViewSplit() {
     // attach toggle modal function to the "well known" button in header
     const headerHintElement = document.getElementById("header-show-key-binding-button");
     if (headerHintElement) headerHintElement.onclick = toggleModal;
+
+    // delegate header display to renderMachine
+    showHeader = useSelector(renderMachineRef, ShowHeaderSelector);
   }
 
   /***
@@ -143,20 +160,11 @@ export default function ViewSplit() {
     // use dependency array to re-attach listeners on page refresh
   }, [renderMachineRef])
 
-  // styling
-  const themeActorRef = ThemeContext.useActorRef();
-
-  const [theme, setTheme] = useState("system" as Theme);
-
-
-  themeActorRef.subscribe((snapshot) => {
-    setTheme(snapshot.value);
-  })
 
     return (
     <div className={"body" + " " + theme}>
       <Header
-        show={true}
+        show={showHeader}
         eventHandlers={headerHandlers}
       />
         <div className="view-wrapper">

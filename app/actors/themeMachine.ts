@@ -52,6 +52,9 @@ export const themeMachine = setup(
         DARK: {
           target: 'dark',
         },
+        INVERT: {
+          target: 'light',
+        }
 
       }
 
