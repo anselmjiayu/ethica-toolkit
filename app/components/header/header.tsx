@@ -1,73 +1,85 @@
 import { useState } from "react";
+import { ThemeContext } from "~/actors/themeMachine";
 
-type HeaderThemes = "light" | "dark" | "system";
+import { Theme } from "~/actors/themeMachine";
 type EventHandler = () => void;
 type HeaderHandlers = {
   onLightTheme: EventHandler,
   onDarkTheme: EventHandler,
   onSystemTheme: EventHandler,
-  onShowHint: EventHandler,
+  onShowHint?: EventHandler,
 }
 
-export function Header({theme, show, eventHandlers}: {theme: HeaderThemes, show: boolean, 
-  eventHandlers: HeaderHandlers}) {
+export function Header({ show, eventHandlers }: {
+  show: boolean,
+  eventHandlers: HeaderHandlers
+}) {
 
-  // opimistic ui
-  const [optTheme, setOptTheme] = useState(theme);
+  const themeActorRef = ThemeContext.useActorRef();
+
+  const [theme, setTheme] = useState("system" as Theme);
+
+  themeActorRef.subscribe((snapshot) => {
+    setTheme(snapshot.value);
+  })
 
   const onLightTheme = () => {
-    setOptTheme("light");
+    themeActorRef.send({ type: 'LIGHT' });
     eventHandlers.onLightTheme();
   }
 
   const onDarkTheme = () => {
-    setOptTheme("dark");
+    themeActorRef.send({ type: 'DARK' });
     eventHandlers.onDarkTheme();
   }
 
   const onSystemTheme = () => {
-    setOptTheme("system");
+    themeActorRef.send({ type: 'SYSTEM' });
     eventHandlers.onSystemTheme();
   }
 
-  return(
-        <header className={"navbar " + optTheme + (show === true ? "" : " display-hide") } top-banner="true">
-          <h2 className="title">Ethica</h2>
-          <details className={optTheme}>
-            <summary>theme</summary>
-            <ul className="option-menu">
-              <li>
-                  <button name="theme" value="light" onClick={onLightTheme}>
-                    Light
-                  </button>
-              </li>
-              <li>
-                  <button name="theme" value="dark" onClick={onDarkTheme}>
-                    Dark
-                  </button>
-              </li>
-              <li>
-                  <button name="theme" value="system" onClick={onSystemTheme}>
-                    System
-                  </button>
-              </li>
-            </ul>
-          </details>
-          <details className={theme}>
-            <summary>
-              options
-            </summary>
-            <ul className="option-menu">
-              <li>Edition</li>
+
+  return (
+    <header className={"navbar " + theme + (show === true ? "" : " display-hide")} top-banner="true">
+      <h2 className="title">Ethica</h2>
+      <details className={theme}>
+        <summary>theme</summary>
+        <ul className="option-menu">
+          <li>
+            <button name="theme" value="light" onClick={onLightTheme}>
+              Light
+            </button>
+          </li>
+          <li>
+            <button name="theme" value="dark" onClick={onDarkTheme}>
+              Dark
+            </button>
+          </li>
+          <li>
+            <button name="theme" value="system" onClick={onSystemTheme}>
+              System
+            </button>
+          </li>
+        </ul>
+      </details>
+      <details className={theme}>
+        <summary>
+          options
+        </summary>
+        <ul className="option-menu">
+          <li>Edition</li>
+          {
+            eventHandlers.onShowHint !== undefined &&
               <li>
                 <button id="header-show-key-binding-button" onClick={eventHandlers.onShowHint}>
                   Key bindings
                 </button>
               </li>
-              <li>About</li>
-            </ul>
-          </details>
-        </header>
+          }
+          <li>About</li>
+        </ul>
+      </details>
+    </header>
   )
 }
 

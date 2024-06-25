@@ -1,11 +1,38 @@
 .modal-root {
-  --modal-background: #00000033;
-  --modal-window-bg: var(--bg-light);
+  --transparent-overlay-dark: #00000021;
+  --transparent-overlay-light: #FFFFFF12;
   --modal-window-border-sz: 3px;
-  --modal-window-border-color: var(--red);
   --icon-size: 22px;
   --modal-text-padding: 15px;
 
+  /* from index.css */
+  --modal-window-bg-light: var(--bg-light);
+  --modal-window-bg-dark: var(--bg-dark);
+  --modal-border-light: var(--light-highlight);
+  --modal-border-dark: var(--dark-highlight);
+
+  /* default */
+  --modal-background: var(--transparent-overlay-dark);
+  --modal-window-bg: var(--modal-window-bg-light);
+  --modal-window-border-color: var(--modal-border-dark);
+}
+
+.dark .modal-root,
+.modal-root.dark {
+  --modal-background: var(--transparent-overlay-light);
+  --modal-window-bg: var(--bg-dark);
+  --modal-window-border-color: var(--modal-border-light);
+}
+
+@media(prefers-color-scheme: dark) {
+  .system .modal-root {
+    --modal-background: var(--transparent-overlay-light);
+    --modal-window-bg: var(--bg-dark);
+    --modal-window-border-color: var(--modal-border-light);
+  }
+}
+
+.modal-root {
   /* define layout outside page flow */
   position: absolute;
   height: 100%;

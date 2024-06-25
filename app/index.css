@@ -52,26 +52,44 @@ html {
 }
 
 body {
+  padding: 0;
+  margin: 0;
+}
+
+/* due to the App() component being treated specially by React, */
+/* it is less convenient to dynamically insert styling class directly */
+/* on the <body> tag. so I am adding another layer of indirection */
+/* for styling the visible contents on the page */
+
+.body {
     padding: 0;
     margin: 0;
     font-family: var(--serif);
-}
-body.light,
-body.system{
-    background-color: var(--bg-light);
-    color: var(--text-dark);
+  --themed-bg-color: var(--bg-light);
+  --themed-text-color: var(--text-dark);
 }
 
-body.dark {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
+/* body.light, */
+/* body.system{ */
+/*   --themed-bg-color: var(--bg-light); */
+/*   --themed-text-color: var(--text-dark); */
+/* } */
+
+.body.dark {
+  --themed-bg-color: var(--bg-dark);
+  --themed-text-color: var(--text-light);
 }
 
 @media(prefers-color-scheme: dark) {
-body.system{
-    background-color: var(--bg-dark);
-    color: var(--text-light);
+  .body.system{
+    --themed-bg-color: var(--bg-dark);
+    --themed-text-color: var(--text-light);
+  }
 }
+
+.body {
+  background-color: var(--themed-bg-color);
+  color: var(--themed-text-color);
 }
 
 

@@ -1,7 +1,8 @@
 import { ActionFunctionArgs, json, type LinksFunction, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useState } from "react";
+import { Theme, ThemeContext } from "~/actors/themeMachine";
 import HomePage from "~/components/HomePage";
-import RenderContents from "~/components/RenderContents";
 
 export const meta: MetaFunction = () => {
   return [
@@ -46,7 +47,7 @@ export async function action({
 
 export default function Index() {
   const fetcher = useFetcher();
-  let { theme } = useLoaderData<typeof loader>();
+  let { theme: loaderTheme } = useLoaderData<typeof loader>();
 
   const onLight = () => fetcher.submit({ theme: "light" }, { method: 'POST' })
   const onDark = () => fetcher.submit({ theme: "dark" }, { method: 'POST' })
@@ -56,18 +57,26 @@ export default function Index() {
     onLightTheme: onLight,
     onDarkTheme: onDark,
     onSystemTheme: onSystem,
-    onShowHint: () => { },
   }
+
+  const themeActorRef = ThemeContext.useActorRef();
+
+  const [theme, setTheme] = useState("system" as Theme);
+  
+
+  themeActorRef.subscribe((snapshot) => {
+    setTheme(snapshot.value);
+  })
+
   return (
-    <>
+    <div className={"body"+ " "+ theme}>
       <Header
-        theme={theme}
         show={true}
         eventHandlers={headerHandlers}
       />
       <div className="wrapper">
         <HomePage />
       </div>
-    </>
+    </div>
   );
 }

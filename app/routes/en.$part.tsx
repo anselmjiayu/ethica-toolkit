@@ -21,6 +21,8 @@ export const links: LinksFunction = () => [
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 import { useEffect, useState } from "react";
+import { Theme, ThemeContext } from "~/actors/themeMachine";
+import { Header } from "~/components/header/header";
 
 export function loader({ params }: LoaderFunctionArgs) {
   // If index does not fall into 1-5, default to 1
@@ -40,6 +42,13 @@ const config: InterpreterConfig = {
 
 const interpreter = new Interpreter(defaultInterpreterStyles, config);
 
+const foo = () => { };
+
+const headerHandlers = {
+  onLightTheme: foo,
+  onDarkTheme: foo,
+  onSystemTheme: foo,
+}
 
 
 export default function ENPartPage() {
@@ -76,22 +85,15 @@ export default function ENPartPage() {
 
   const renderMachineRef = useSelector(syncMachineRef, en_renderMachineSelector);
 
-  const renderMachineSnapshot: SnapshotFrom<PageRenderMachine> | undefined
-    = renderMachineRef !== undefined
-      ? renderMachineRef.getSnapshot()
-      // if not available, do nothing
-      : undefined;
-
   const toggleModal: () => void = (
     renderMachineRef === undefined
       ? () => { }
       : () => renderMachineRef.send({ type: 'TOGGLE_MODAL' })
   )
 
-
   const sendKeyEvent: (event: KeyboardEvent) => void =
     (renderMachineRef === undefined
-      ? (_event) => { 
+      ? (_event) => {
         ;
       }
       : keyEventDispatcherCreator(renderMachineRef));
@@ -120,8 +122,22 @@ export default function ENPartPage() {
     // use dependency array to re-attach listeners on page refresh
   }, [renderMachineRef])
 
+  // styling
+  const themeActorRef = ThemeContext.useActorRef();
+
+  const [theme, setTheme] = useState("system" as Theme);
+
+
+  themeActorRef.subscribe((snapshot) => {
+    setTheme(snapshot.value);
+  })
+
   return (
-    <>
+    <div className={"body" + " " + theme}>
+      <Header
+        show={true}
+        eventHandlers={headerHandlers}
+      />
       <div className="wrapper">
         <Navigate section={partIndex} />
         {sectionNode}
@@ -131,7 +147,7 @@ export default function ENPartPage() {
       <ModalRoot show={showModal} handleClose={toggleModal}>
         <ShowHints />
       </ModalRoot>
-    </>
+    </div>
   );
 }
 
@@ -153,8 +169,8 @@ function Navigate({ section }: { section: number }) {
 
 // takes a ref of a page render machine instance, and produces an event dispatcher that takes in a keyboard input event
 
-function keyEventDispatcherCreator (renderRef: ActorRefFrom<PageRenderMachine>){
- return function(event: KeyboardEvent) {
+function keyEventDispatcherCreator(renderRef: ActorRefFrom<PageRenderMachine>) {
+  return function(event: KeyboardEvent) {
     console.log("Key pressed: " + event.key);
     switch (event.key) {
       case 'a':
@@ -168,7 +184,7 @@ function keyEventDispatcherCreator (renderRef: ActorRefFrom<PageRenderMachine>){
         renderRef.send({ type: 'INPUT', key: KBD_INPUT.ESC });
         break;
       case '\\':
-      renderRef.send({ type: 'INPUT', key: KBD_INPUT.BACKSLASH});
+        renderRef.send({ type: 'INPUT', key: KBD_INPUT.BACKSLASH });
       default:
         break;
     }
