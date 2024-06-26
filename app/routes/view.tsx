@@ -1,5 +1,5 @@
-import { LinksFunction, LoaderFunctionArgs, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { ActionFunctionArgs, LinksFunction, LoaderFunctionArgs, json } from "@remix-run/node";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 import { links as frameLinks } from "~/components/frame-view";
@@ -13,19 +13,44 @@ import { Theme, ThemeContext } from "~/actors/themeMachine";
 import ModalRoot from "~/components/modal/ModalRoot";
 import ShowHints from "~/components/modal/ShowHints";
 import { Header } from "~/components/header/header";
+import { prefs } from "~/components/header/prefs-cookie";
 
 export const links: LinksFunction = () => [
     ...frameLinks(),
 ];
 
-export function loader({ request }: LoaderFunctionArgs) {
-    const url = new URL(request.url);
-    const view1 = url.searchParams.get("view1") || "la";
-    const part1 = url.searchParams.get("part1") || "1";
+// save preferences in cookie for persistent state
 
-    const view2 = url.searchParams.get("view2") || "en";
-    const part2 = url.searchParams.get("part2") || "1";
-    return { view1, part1, view2, part2 };
+export async function action({
+  request,
+}: ActionFunctionArgs) {
+  const cookieHeader = request.headers.get("Cookie");
+  const cookie = (await prefs.parse(cookieHeader)) || {};
+  const formData = await request.formData();
+
+  const theme = formData.get("theme") || "system";
+  cookie.theme = theme;
+
+  return json(theme, {
+    headers: {
+      "Set-Cookie": await prefs.serialize(cookie),
+    },
+  });
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+
+  const cookieHeader = request.headers.get("Cookie");
+  const cookie = (await prefs.parse(cookieHeader)) || {};
+  const url = new URL(request.url);
+  const view1 = url.searchParams.get("view1") || "la";
+  const part1 = url.searchParams.get("part1") || "1";
+
+  const view2 = url.searchParams.get("view2") || "en";
+  const part2 = url.searchParams.get("part2") || "1";
+  return json({
+    view1, part1, view2, part2, theme: cookie.theme
+  });
 }
 
 const CURRENT_PAGE = 0;
@@ -55,17 +80,28 @@ const headerHandlers = {
 
 export default function ViewSplit() {
 
+  const fetcher = useFetcher();
+  const { view1, view2, part1, part2, theme: loaderTheme} = useLoaderData<typeof loader>();
+
+  const headerHandlers = {
+    onLightTheme: ()=>fetcher.submit({ theme: "light" }, { method: 'POST' }),
+    onDarkTheme: ()=>fetcher.submit({ theme: "dark" }, { method: 'POST' }),
+    onSystemTheme: ()=>fetcher.submit({ theme: "system" }, { method: 'POST' }),
+    onShowHint: function(){},
+  }
+
   const syncMachineRef = LazySyncContext.useActorRef();
 
   // styling
   const themeActorRef = ThemeContext.useActorRef();
 
-  const [theme, setTheme] = useState("system" as Theme);
+  const [theme, setTheme] = useState(loaderTheme);
 
 
   themeActorRef.subscribe((snapshot) => {
     setTheme(snapshot.value);
   })
+
   function getAstBranch(view: string, part: string) {
     // provide default params
     let a = view === "en" ? LazySyncContext.useSelector(state => state.context.en_source?.ast) 
@@ -90,7 +126,6 @@ export default function ViewSplit() {
     return a?.parts[idx] || undefined;
   }
 
-    const { view1, view2, part1, part2 } = useLoaderData<typeof loader>();
     const ast1 = getAstBranch(view1, part1);
     const ast2 = getAstBranch(view2, part2);
 
@@ -152,6 +187,7 @@ export default function ViewSplit() {
   // client-only
   useEffect(() => {
     window.addEventListener('keydown', sendKeyEvent);
+    themeActorRef.send({type: 'SET', theme: loaderTheme});
     // cleanup
     return () => {
       window.removeEventListener('keydown', sendKeyEvent);
@@ -165,10 +201,12 @@ export default function ViewSplit() {
       <Header
         show={showHeader}
         eventHandlers={headerHandlers}
+        initTheme={loaderTheme}
       />
         <div className="view-wrapper">
             <div className="placeholder"/>
-            <div className="wrapper view view1">{sectionNode1}</div>
+            <div className="wrapper view view1">
+        {sectionNode1}</div>
             <div className="separator"/>
             <div className="wrapper view view2">{sectionNode2}</div>
         </div>

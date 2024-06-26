@@ -1,3 +1,5 @@
+import { redirect } from "@remix-run/node";
+import { Link } from "@remix-run/react";
 import { useState } from "react";
 import { ThemeContext } from "~/actors/themeMachine";
 
@@ -10,14 +12,15 @@ export type HeaderHandlers = {
   onShowHint?: EventHandler,
 }
 
-export function Header({ show, eventHandlers }: {
+export function Header({ show, eventHandlers, initTheme }: {
   show: boolean,
   eventHandlers: HeaderHandlers
+  initTheme: Theme
 }) {
 
   const themeActorRef = ThemeContext.useActorRef();
 
-  const [theme, setTheme] = useState("system" as Theme);
+  const [theme, setTheme] = useState(initTheme);
 
   themeActorRef.subscribe((snapshot) => {
     setTheme(snapshot.value);
@@ -41,7 +44,9 @@ export function Header({ show, eventHandlers }: {
 
   return (
     <header className={"navbar " + theme + (show === true ? "" : " display-hide")} top-banner="true">
+      <Link to={"/"} className="unstyled">
       <h2 className="title">Ethica</h2>
+      </Link>
       <details className={theme}>
         <summary>theme</summary>
         <ul className="option-menu">

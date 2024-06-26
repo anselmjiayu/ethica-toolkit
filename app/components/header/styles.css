@@ -1,6 +1,9 @@
 .navbar {
   display: flex;
   position: fixed;
+
+  /* positive z-index to prevent cover by content elements */
+  z-index: 1;
   width: 100%;
   top: 0;
   flex-direction: row;

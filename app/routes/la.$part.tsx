@@ -1,5 +1,5 @@
-import { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { ActionFunctionArgs, LinksFunction, LoaderFunctionArgs, json } from "@remix-run/node";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { useSelector } from "@xstate/react";
 import { useEffect, useState } from "react";
 import { LazySyncContext, SourceEditions, la_renderMachineSelector } from "~/actors/lazySyncMachine";
@@ -19,9 +19,36 @@ import { Interpreter, InterpreterConfig } from "~/interpreter/interpreter";
 import { la_ast } from "~/runtime/la_gebhardt_instance";
 import { defaultInterpreterStyles } from "~/styles/default_interpreter_style";
 
-export function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  const cookieHeader = request.headers.get("Cookie");
+  const cookie = (await prefs.parse(cookieHeader)) || {};
+
   // If index does not fall into 1-5, default to 1
-  return params.part?.match(/^[1-5]$/) ? Number.parseInt(params.part) : 1;
+  const partIndex = params.part?.match(/^[1-5]$/) ? Number.parseInt(params.part) : 1;
+
+  return json({
+    partIndex: partIndex,
+    theme: cookie.theme
+  })
+}
+
+// save preferences in cookie for persistent state
+
+export async function action({
+  request,
+}: ActionFunctionArgs) {
+  const cookieHeader = request.headers.get("Cookie");
+  const cookie = (await prefs.parse(cookieHeader)) || {};
+  const formData = await request.formData();
+
+  const theme = formData.get("theme") || "system";
+  cookie.theme = theme;
+
+  return json(theme, {
+    headers: {
+      "Set-Cookie": await prefs.serialize(cookie),
+    },
+  });
 }
 
 const transformLink = (link: string): string => {
@@ -37,22 +64,21 @@ const config: InterpreterConfig = {
 
 const interpreter = new Interpreter(defaultInterpreterStyles, config);
 
-
-const foo = () => { };
-
-const headerHandlers = {
-  onLightTheme: foo,
-  onDarkTheme: foo,
-  onSystemTheme: foo,
-}
-
 export default function LAPartPage() {
-  const partIndex = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
+  const {partIndex, theme: loaderTheme} = useLoaderData<typeof loader>();
+
+  const headerHandlers = {
+    onLightTheme: ()=>fetcher.submit({ theme: "light" }, { method: 'POST' }),
+    onDarkTheme: ()=>fetcher.submit({ theme: "dark" }, { method: 'POST' }),
+    onSystemTheme: ()=>fetcher.submit({ theme: "system" }, { method: 'POST' }),
+    onShowHint: function(){},
+  }
 
   // styling
   const themeActorRef = ThemeContext.useActorRef();
 
-  const [theme, setTheme] = useState("system" as Theme);
+  const [theme, setTheme] = useState(loaderTheme);
 
 
   themeActorRef.subscribe((snapshot) => {
@@ -126,6 +152,7 @@ export default function LAPartPage() {
   // client-only
   useEffect(() => {
     window.addEventListener('keydown', sendKeyEvent);
+    themeActorRef.send({type: 'SET', theme: loaderTheme});
     // cleanup
     return () => {
       window.removeEventListener('keydown', sendKeyEvent);
@@ -138,8 +165,10 @@ export default function LAPartPage() {
       <Header
         show={showHeader}
         eventHandlers={headerHandlers}
+        initTheme={loaderTheme}
       />
-      <div className="wrapper">
+      {/* set content language */}
+      <div className="wrapper" lang="la">
         <Navigate section={partIndex} />
         {sectionNode}
         <Navigate section={partIndex} />

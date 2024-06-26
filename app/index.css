@@ -30,8 +30,9 @@ html {
 
     /* fonts */
     --decorative: "Junicode", serif;
-    --serif: "Junicode", serif;
-    --sans: "Open Sans", sans-serif;
+  --monospace: "Consolas", "Inconsolata", "Cascadia", monospace;
+    --serif: "Junicode", "Garamond", "Athelas", "Georgia", "Lucida Bright", serif;
+    --sans: "Open Sans","Tahoma", "Lucida Grande", sans-serif;
 
     /* font sizes */
     --base-size: 1.2rem;
@@ -68,6 +69,7 @@ body {
     font-family: var(--serif);
   --themed-bg-color: var(--bg-light);
   --themed-text-color: var(--text-dark);
+  --themed-highlight: var(--light-highlight);
 }
 
 /* body.light, */
@@ -79,12 +81,14 @@ body {
 .body.dark {
   --themed-bg-color: var(--bg-dark);
   --themed-text-color: var(--text-light);
+  --themed-highlight: var(--dark-highlight);
 }
 
 @media(prefers-color-scheme: dark) {
   .body.system{
     --themed-bg-color: var(--bg-dark);
     --themed-text-color: var(--text-light);
+    --themed-highlight: var(--dark-highlight);
   }
 }
 

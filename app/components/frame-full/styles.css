@@ -26,16 +26,19 @@
 .wrapper h1,
 .wrapper h2 {
   margin-top: var(--h1);
-  margin-bottom: var(--h1);
+  padding-bottom: var(--h6);
+  margin-bottom: var(--h2);
   padding-left: var(--h6);
   text-justify: none;
   text-align: center;
+
+  box-shadow: 0 2px 1px -1px var(--themed-highlight);
 }
 
 h3,
 h4 {
   margin-top: var(--h2);
-  margin-bottom: var(--h2);
+  margin-bottom: var(--h3);
 }
 
 dl {
@@ -79,6 +82,12 @@ dt:hover>.anchor-link {
 
 .dark a {
   color: var(--lightblue);
+}
+
+/* add specificity */
+a.unstyled.unstyled {
+  color: unset;
+  text-decoration: unset;
 }
 
 p {
@@ -130,4 +139,29 @@ p {
     padding-left: 4rem;
     padding-right: 4rem;
   }
+}
+
+.floating-container {
+  float: left;
+  shape-outside: content-box;
+}
+
+img.figure {
+  width: 150px;
+  height: auto;
+  object-fit: contain;
+  margin: 10px;
+  
+  /* match figure to background color */
+  filter: invert(7%);
+}
+
+.body.dark img.figure {
+  filter: invert(87%);
+}
+
+@media(prefers-color-scheme: dark) {
+.body.system img.figure {
+  filter: invert(87%);
+}
 }

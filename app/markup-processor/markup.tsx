@@ -154,18 +154,27 @@ export class MarkupProcessor {
     return (
       <>
 {/* <img src={address} alt={text} /> */}
-        <label>{text}</label>
+        <span className="floating-container">
+        <img src={this.locateFigureResource(address)} alt={text} className="figure"/>
+        </span>
 </>
     )
   }
 
   private visitComment(section: string): ReactNode {
     return (
-    <cite>
+      <>
+        {" (note: "}
     {this.process(section)}
-    </cite>
+        {") "}
+    </>
     )
   }
+
+  private locateFigureResource(resourcePath: string): string {
+    return resourcePath.replace("/assets/img/", "/figures/");
+  }
+
   static linkRx = /\[([^\]]+)\]\(([\w\s]+)\)/;
 
   // do not support nesting

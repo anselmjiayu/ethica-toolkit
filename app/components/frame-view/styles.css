@@ -8,7 +8,7 @@
   --separator-length: 450px;
   grid-template-columns: auto var(--separator-length) auto;
 
-  --placeholder-height: 80px;
+  /* --placeholder-height: 80px; */
   --separator-width: 1px;
   max-width: 1200px;
   margin-left: auto;
@@ -23,7 +23,8 @@
   margin-top: 0.5rem;
 
   /* two text frames flow separately */
-  max-height: calc((100vh - var(--placeholder-height) - var(--separator-width)) / 2);
+  /* max-height: calc((100vh - var(--placeholder-height) - var(--separator-width)) / 2); */
+  max-height: 50vh;
   overflow-y: scroll;
 }
 
@@ -94,6 +95,7 @@
   }
 
   .wrapper.view {
-    max-height: calc(100vh - var(--placeholder-height));
+    /* max-height: calc(100vh - var(--placeholder-height)); */
+    max-height: 100vh;
   }
 }

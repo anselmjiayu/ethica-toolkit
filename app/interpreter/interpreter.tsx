@@ -152,6 +152,7 @@ export class Interpreter implements StmtVisitor<ReactNode>, ExprVisitor<ReactNod
   }
 
 
+
   // it's not a good idea to reassign this because the entire document tree will be rerendered
   private readonly styles;
   private readonly config;

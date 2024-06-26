@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, json, type LinksFunction, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Theme, ThemeContext } from "~/actors/themeMachine";
 import HomePage from "~/components/HomePage";
 
@@ -33,7 +33,7 @@ export async function action({
   const cookie = (await prefs.parse(cookieHeader)) || {};
   const formData = await request.formData();
 
-  const theme = formData.get("theme");
+  const theme = formData.get("theme") || "system";
   cookie.theme = theme;
 
   return json(theme, {
@@ -49,30 +49,31 @@ export default function Index() {
   const fetcher = useFetcher();
   let { theme: loaderTheme } = useLoaderData<typeof loader>();
 
-  const onLight = () => fetcher.submit({ theme: "light" }, { method: 'POST' })
-  const onDark = () => fetcher.submit({ theme: "dark" }, { method: 'POST' })
-  const onSystem = () => fetcher.submit({ theme: "system" }, { method: 'POST' })
-
   const headerHandlers = {
-    onLightTheme: onLight,
-    onDarkTheme: onDark,
-    onSystemTheme: onSystem,
+    onLightTheme: ()=>fetcher.submit({ theme: "light" }, { method: 'POST' }),
+    onDarkTheme: ()=>fetcher.submit({ theme: "dark" }, { method: 'POST' }),
+    onSystemTheme: ()=>fetcher.submit({ theme: "system" }, { method: 'POST' }),
   }
+  
 
   const themeActorRef = ThemeContext.useActorRef();
 
-  const [theme, setTheme] = useState("system" as Theme);
+  const [theme, setTheme] = useState(loaderTheme);
   
 
   themeActorRef.subscribe((snapshot) => {
     setTheme(snapshot.value);
   })
+  useEffect(() => {
+    themeActorRef.send({type: 'SET', theme: loaderTheme});
+  }, [])
 
   return (
     <div className={"body"+ " "+ theme}>
       <Header
         show={true}
         eventHandlers={headerHandlers}
+        initTheme={loaderTheme}
       />
       <div className="wrapper">
         <HomePage />
