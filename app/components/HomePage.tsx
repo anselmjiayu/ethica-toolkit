@@ -18,37 +18,37 @@ export default function HomePage() {
           <h3>English Translation (R. Elwes, 1883)</h3>
           <ol>
             <li>
-              <Link to="/en/1">Part 1</Link>
+              <Link to="/en/1">Concerning God</Link>
             </li>
             <li>
-              <Link to="/en/2">Part 2 </Link>
+              <Link to="/en/2">Of the Nature and Origin of The Mind</Link>
             </li>
             <li>
-              <Link to="/en/3">Part 3 </Link>
+              <Link to="/en/3">On the Origin and Nature of the Emotions</Link>
             </li>
             <li>
-              <Link to="/en/4">Part 4 </Link>
+              <Link to="/en/4">Of Human Bondage, or the Strength of the Emotions</Link>
             </li>
             <li>
-              <Link to="/en/5">Part 5 </Link>
+              <Link to="/en/5">Of the Power of the Understanding, or of Human Freedom</Link>
             </li>
           </ol>
           <h3>Latin Edition (C. Gebhardt)</h3>
           <ol>
             <li>
-              <Link to="/la/1">Part 1</Link>
+              <Link to="/la/1">De Deo</Link>
             </li>
             <li>
-              <Link to="/la/2">Part 2 </Link>
+              <Link to="/la/2">De Naturâ, & Origine Mentis</Link>
             </li>
             <li>
-              <Link to="/la/3">Part 3 </Link>
+              <Link to="/la/3">De Origine & Naturâ Affectuum</Link>
             </li>
             <li>
-              <Link to="/la/4">Part 4 </Link>
+              <Link to="/la/4">De Servitute Humanâ, seu de Affectuum Viribus</Link>
             </li>
             <li>
-              <Link to="/la/5">Part 5 </Link>
+              <Link to="/la/5">De Potentiâ Intellectûs, seu de Libertate Humanâ</Link>
             </li>
           </ol>
           <h3>Latin/English split screen reader</h3>
